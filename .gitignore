@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+*.egg-info/
+.venv/
+dist/
+build/
+
+# Node
+node_modules/
+.next/
+*.log
+.DS_Store
+
+# Secrets / local config
+dev/backend/.env
+dev/frontend/.env.local
+
+# Conda / pip
+*.egg
+.eggs/

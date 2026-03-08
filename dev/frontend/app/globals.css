@@ -1,0 +1,180 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* KaTeX styles */
+@import 'katex/dist/katex.min.css';
+
+:root {
+  --bg-dark: #0F172A;
+  --bg-surface: #1E293B;
+  --bg-elevated: #334155;
+  --primary: #6366F1;
+  --primary-dark: #4338CA;
+  --secondary: #8B5CF6;
+  --success: #22C55E;
+  --error: #EF4444;
+  --warning: #F59E0B;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --border: #334155;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-elevated);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* CodeMirror Editor */
+.cm-editor {
+  height: 100%;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.cm-editor.cm-focused {
+  outline: none;
+}
+
+.cm-scroller {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+}
+
+/* KaTeX formula rendering */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0;
+}
+
+.katex {
+  color: var(--text-primary);
+}
+
+/* Code blocks */
+.lean-code {
+  font-family: 'JetBrains Mono', monospace;
+  background: #0D1117;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  overflow-x: auto;
+}
+
+/* Skeleton loading */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.skeleton {
+  animation: skeleton-pulse 2s ease-in-out infinite;
+  background: var(--bg-surface);
+  border-radius: 4px;
+}
+
+/* Custom button styles */
+.btn-primary {
+  @apply bg-primary hover:bg-primary-dark text-white font-medium px-4 py-2 rounded-lg transition-all duration-150 flex items-center gap-2;
+}
+
+.btn-secondary {
+  @apply bg-bg-surface hover:bg-bg-elevated text-text-primary font-medium px-4 py-2 rounded-lg border border-border transition-all duration-150 flex items-center gap-2;
+}
+
+.btn-ghost {
+  @apply hover:bg-bg-surface text-text-secondary hover:text-text-primary font-medium px-4 py-2 rounded-lg transition-all duration-150 flex items-center gap-2;
+}
+
+/* Similarity score badge */
+.similarity-badge {
+  @apply text-xs font-mono px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30;
+}
+
+/* Card */
+.card {
+  @apply bg-bg-surface border border-border rounded-xl p-4;
+}
+
+/* IDE layout */
+.ide-container {
+  display: grid;
+  grid-template-columns: 200px 1fr 320px;
+  height: calc(100vh - 56px);
+  overflow: hidden;
+}
+
+@media (max-width: 1024px) {
+  .ide-container {
+    grid-template-columns: 1fr 280px;
+  }
+  .ide-file-tree {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .ide-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Proof goal panel */
+.proof-goal {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: #93C5FD;
+}
+
+/* Error annotation */
+.error-annotation {
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 2px solid #EF4444;
+}
+
+/* Suggestion fix */
+.fix-suggestion {
+  background: rgba(34, 197, 94, 0.05);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 8px;
+}
+
+/* Toast overrides */
+.react-hot-toast {
+  background: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+}
