@@ -3,7 +3,7 @@ Pydantic schemas for all API endpoints
 """
 
 from typing import List, Optional, Literal
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, ConfigDict
 
 
 # === Search ===
@@ -218,6 +218,8 @@ class UpdateSessionRequest(BaseModel):
 
 
 class ProofSessionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     user_id: str
     title: str
@@ -227,9 +229,6 @@ class ProofSessionResponse(BaseModel):
     last_error: Optional[str] = None
     created_at: str
     updated_at: str
-
-    class Config:
-        from_attributes = True
 
 
 # === Billing ===

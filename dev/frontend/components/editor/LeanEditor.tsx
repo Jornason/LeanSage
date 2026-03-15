@@ -11,7 +11,7 @@ interface CompilationError {
   line: number;
   column: number;
   message: string;
-  severity: "error" | "warning";
+  severity: "error" | "warning" | "info";
 }
 
 interface LeanEditorProps {

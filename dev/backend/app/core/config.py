@@ -3,10 +3,13 @@ Application configuration using Pydantic Settings
 """
 
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 from functools import lru_cache
 
 
 class Settings(BaseSettings):
+    model_config = ConfigDict(env_file=".env", case_sensitive=True)
+
     # App
     APP_NAME: str = "LeanProve AI"
     APP_VERSION: str = "0.1.0"
@@ -52,10 +55,6 @@ class Settings(BaseSettings):
 
     # Logging
     LOG_LEVEL: str = "INFO"
-
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
 
 
 @lru_cache()
