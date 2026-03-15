@@ -36,6 +36,22 @@ MOCK_USERS["demo@leanprove.ai"] = {
     "password_hash": hash_password("demo12345"),
 }
 
+# Pre-populate an admin user with maximum privileges
+ADMIN_USER = {
+    "id": "user_admin_001",
+    "email": "admin@leanprove.ai",
+    "display_name": "Admin",
+    "role": "admin",
+    "avatar_url": None,
+    "github_id": None,
+    "locale": "en",
+    "created_at": "2026-01-01T00:00:00Z",
+}
+MOCK_USERS["admin@leanprove.ai"] = {
+    **ADMIN_USER,
+    "password_hash": hash_password("admin12345"),
+}
+
 
 def _make_user_info(user_data: dict) -> UserInfo:
     """Build a UserInfo schema from raw user dict, excluding sensitive fields."""

@@ -29,7 +29,20 @@ MOCK_SUBSCRIPTIONS: dict[str, dict] = {
         "cancel_at_period_end": False,
         "created_at": "2026-01-15T00:00:00Z",
         "updated_at": "2026-03-01T00:00:00Z",
-    }
+    },
+    "user_admin_001": {
+        "id": "sub_admin_1",
+        "user_id": "user_admin_001",
+        "plan": "admin",
+        "status": "active",
+        "stripe_customer_id": "cus_admin_001",
+        "stripe_subscription_id": "sub_admin_001",
+        "current_period_start": "2026-01-01T00:00:00Z",
+        "current_period_end": "2099-12-31T00:00:00Z",
+        "cancel_at_period_end": False,
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+    },
 }
 
 PLAN_PRICES = {

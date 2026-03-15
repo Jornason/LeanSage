@@ -188,11 +188,31 @@ Copy `.env.example` to `.env` in the backend directory and fill in the values:
 
 ---
 
-## Demo Credentials
+## Accounts
 
+### Admin (full access)
+```
+Email: admin@leanprove.ai
+Password: admin12345
+Role: admin (unlimited quota, 120 req/min, all features)
+```
+
+### Demo (researcher tier)
 ```
 Email: demo@leanprove.ai
 Password: demo12345
+Role: researcher
 ```
 
-Or visit `/demo` for instant auto-login.
+Or visit `/demo` for instant auto-login as the demo user.
+
+### Role Permissions
+
+| Feature | free | researcher | lab | admin |
+|---------|------|-----------|-----|-------|
+| Mathlib Search | 10/month | unlimited | 500/month | unlimited |
+| Proof Generation | - | 50/month | 500/month | unlimited |
+| Error Diagnosis | 10/month | unlimited | 500/month | unlimited |
+| Lean Compilation | - | unlimited | unlimited | unlimited |
+| Tactic Explanation | basic | detailed | detailed | detailed |
+| Rate Limit | 10/min | 30/min | 60/min | 120/min |

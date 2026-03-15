@@ -26,7 +26,15 @@ MOCK_USAGE = {
         "diagnoses": 8,
         "compilations": 23,
         "api_calls_today": 15,
-    }
+    },
+    "user_admin_001": {
+        "plan": "admin",
+        "searches": 0,
+        "generations": 0,
+        "diagnoses": 0,
+        "compilations": 0,
+        "api_calls_today": 0,
+    },
 }
 
 
@@ -72,16 +80,31 @@ async def get_usage(
 @router.get("/user/profile")
 async def get_profile(user_id: str = Depends(get_current_user_id)):
     """Get current user's profile. Requires authentication."""
-    user_plan = get_user_plan(user_id)
+    from app.routers.auth import MOCK_USERS
 
-    # In production, query from database
+    # Look up user from mock store
+    for user_data in MOCK_USERS.values():
+        if user_data.get("id") == user_id:
+            return ok({
+                "id": user_id,
+                "email": user_data["email"],
+                "display_name": user_data["display_name"],
+                "role": user_data.get("role", "free"),
+                "avatar_url": user_data.get("avatar_url"),
+                "locale": user_data.get("locale", "en"),
+                "usage_count_month": 0,
+                "created_at": user_data.get("created_at", ""),
+            })
+
+    # Fallback for unknown users
+    user_plan = get_user_plan(user_id)
     return ok({
         "id": user_id,
-        "email": "demo@leanprove.ai",
-        "display_name": "Demo Researcher",
+        "email": "unknown@leanprove.ai",
+        "display_name": "Unknown User",
         "role": user_plan,
         "avatar_url": None,
         "locale": "en",
-        "usage_count_month": 47,
-        "created_at": "2026-01-01T00:00:00Z",
+        "usage_count_month": 0,
+        "created_at": "",
     })

@@ -19,6 +19,15 @@ def get_demo_token() -> str:
     return resp.json()["data"]["access_token"]
 
 
+def get_admin_token() -> str:
+    resp = client.post("/v1/auth/login", json={
+        "email": "admin@leanprove.ai",
+        "password": "admin12345",
+    })
+    assert resp.status_code == 200
+    return resp.json()["data"]["access_token"]
+
+
 def auth_headers(token: str = None) -> dict:
     if token is None:
         token = get_demo_token()
@@ -430,4 +439,124 @@ class TestHealth:
 
     def test_root(self):
         resp = client.get("/")
+        assert resp.status_code == 200
+
+
+# ===========================================================================
+# Admin Account Tests - Maximum Privileges
+# ===========================================================================
+
+class TestAdminAccount:
+    def test_admin_login(self):
+        """Admin can login with email/password."""
+        resp = client.post("/v1/auth/login", json={
+            "email": "admin@leanprove.ai",
+            "password": "admin12345",
+        })
+        assert resp.status_code == 200
+        data = resp.json()["data"]
+        assert data["access_token"]
+        assert data["user"]["role"] == "admin"
+        assert data["user"]["email"] == "admin@leanprove.ai"
+        assert data["user"]["display_name"] == "Admin"
+
+    def test_admin_profile(self):
+        """Admin profile shows admin role."""
+        headers = {"Authorization": f"Bearer {get_admin_token()}"}
+        resp = client.get("/v1/user/profile", headers=headers)
+        assert resp.status_code == 200
+        data = resp.json()["data"]
+        assert data["role"] == "admin"
+        assert data["email"] == "admin@leanprove.ai"
+
+    def test_admin_usage_unlimited(self):
+        """Admin has unlimited quota."""
+        headers = {"Authorization": f"Bearer {get_admin_token()}"}
+        resp = client.get("/v1/user/usage", headers=headers)
+        assert resp.status_code == 200
+        data = resp.json()["data"]
+        assert data["plan"] == "admin"
+        assert data["searches"]["limit"] == -1  # unlimited
+
+    def test_admin_search(self):
+        """Admin can use search."""
+        headers = {"Authorization": f"Bearer {get_admin_token()}"}
+        resp = client.post("/v1/search/mathlib", json={"query": "continuous"}, headers=headers)
+        assert resp.status_code == 200
+
+    def test_admin_generate(self):
+        """Admin can use proof generation (researcher+ gated)."""
+        headers = {"Authorization": f"Bearer {get_admin_token()}"}
+        resp = client.post("/v1/generate/proof", json={
+            "description": "Prove 1+1=2",
+        }, headers=headers)
+        assert resp.status_code == 200
+
+    def test_admin_compile(self):
+        """Admin can use compilation (researcher+ gated)."""
+        headers = {"Authorization": f"Bearer {get_admin_token()}"}
+        resp = client.post("/v1/compile/check", json={
+            "code": "theorem test : 1 + 1 = 2 := by norm_num",
+        }, headers=headers)
+        assert resp.status_code == 200
+
+    def test_admin_diagnose(self):
+        """Admin can use error diagnosis."""
+        headers = {"Authorization": f"Bearer {get_admin_token()}"}
+        resp = client.post("/v1/diagnose/error", json={
+            "code": "theorem bad : True := by omega_bad",
+            "error_message": "unknown tactic",
+        }, headers=headers)
+        assert resp.status_code == 200
+
+    def test_admin_convert(self):
+        """Admin can use LaTeX↔Lean conversion."""
+        headers = {"Authorization": f"Bearer {get_admin_token()}"}
+        resp = client.post("/v1/convert/latex-to-lean", json={
+            "latex": r"\forall x, x > 0",
+        }, headers=headers)
+        assert resp.status_code == 200
+
+    def test_admin_explain(self):
+        """Admin can use tactic explanation."""
+        headers = {"Authorization": f"Bearer {get_admin_token()}"}
+        resp = client.post("/v1/explain/tactics", json={
+            "code": "theorem test : True := by trivial",
+        }, headers=headers)
+        assert resp.status_code == 200
+
+    def test_admin_billing(self):
+        """Admin subscription shows admin plan."""
+        headers = {"Authorization": f"Bearer {get_admin_token()}"}
+        resp = client.get("/v1/billing/subscription", headers=headers)
+        assert resp.status_code == 200
+        data = resp.json()["data"]
+        assert data["plan"] == "admin"
+
+    def test_admin_proof_sessions(self):
+        """Admin can manage proof sessions."""
+        headers = {"Authorization": f"Bearer {get_admin_token()}"}
+        # Create
+        resp = client.post("/v1/proof/sessions", json={
+            "title": "Admin Test Session",
+        }, headers=headers)
+        assert resp.status_code == 200
+        session_id = resp.json()["data"]["id"]
+
+        # List
+        resp = client.get("/v1/proof/sessions", headers=headers)
+        assert resp.status_code == 200
+
+        # Read
+        resp = client.get(f"/v1/proof/sessions/{session_id}", headers=headers)
+        assert resp.status_code == 200
+
+        # Update
+        resp = client.patch(f"/v1/proof/sessions/{session_id}", json={
+            "title": "Admin Updated",
+        }, headers=headers)
+        assert resp.status_code == 200
+
+        # Delete
+        resp = client.delete(f"/v1/proof/sessions/{session_id}", headers=headers)
         assert resp.status_code == 200

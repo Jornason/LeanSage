@@ -92,7 +92,7 @@ async def explain_tactics(
 
     # Detailed explanations require Researcher+ plan
     if request.detail_level == "detailed":
-        require_plan(user_plan, ["researcher", "lab", "enterprise"])
+        require_plan(user_plan, ["researcher", "lab", "admin"])
 
     tactics = parse_tactics(request.code)
     explanations = (
