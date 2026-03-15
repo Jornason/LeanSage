@@ -3,23 +3,44 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Github, Mail, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/useTranslation";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8005/v1";
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoading(false);
-    // Redirect to dashboard
-    window.location.href = "/dashboard";
+    setError("");
+    try {
+      const endpoint = isLogin ? "/auth/login" : "/auth/register";
+      const body = isLogin
+        ? { email, password }
+        : { email, password, display_name: name };
+      const res = await fetch(`${API_URL}${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error ?? "Authentication failed");
+      localStorage.setItem("access_token", json.data.access_token);
+      window.location.href = "/search";
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGithubLogin = () => {
@@ -43,27 +64,26 @@ export default function LoginPage() {
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-glow-primary">
               <span className="text-white text-sm font-bold">LP</span>
             </div>
-            <span className="font-bold text-xl text-text-primary">LeanProve AI</span>
+            <span className="font-bold text-xl text-text-primary">{t.common.app_name}</span>
           </div>
 
           <h1 className="text-4xl font-bold text-text-primary leading-tight mb-6">
-            AI-Powered<br />
+            {t.login.branding_title_1}<br />
             <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Lean 4
+              {t.login.branding_title_2}
             </span>{" "}
-            Assistant
+            {t.login.branding_title_3}
           </h1>
           <p className="text-text-secondary text-lg leading-relaxed max-w-md">
-            Search Mathlib semantically, generate proof drafts, diagnose errors,
-            and convert between LaTeX and Lean 4.
+            {t.login.branding_description}
           </p>
         </div>
 
         <div className="relative space-y-4">
           {[
-            { icon: "🔍", text: "200k+ Mathlib theorems indexed" },
-            { icon: "⚡", text: "AI proof generation in seconds" },
-            { icon: "🎯", text: "70%+ error diagnosis accuracy" },
+            { icon: "🔍", text: t.login.branding_stat_1 },
+            { icon: "⚡", text: t.login.branding_stat_2 },
+            { icon: "🎯", text: t.login.branding_stat_3 },
           ].map((item) => (
             <div key={item.text} className="flex items-center gap-3 text-text-secondary text-sm">
               <span className="text-lg">{item.icon}</span>
@@ -81,16 +101,14 @@ export default function LoginPage() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
               <span className="text-white text-xs font-bold">LP</span>
             </div>
-            <span className="font-bold text-text-primary">LeanProve AI</span>
+            <span className="font-bold text-text-primary">{t.common.app_name}</span>
           </div>
 
           <h2 className="text-2xl font-bold text-text-primary mb-2">
-            {isLogin ? "Welcome back" : "Create your account"}
+            {isLogin ? t.login.welcome_back : t.login.create_account}
           </h2>
           <p className="text-text-secondary text-sm mb-8">
-            {isLogin
-              ? "Sign in to your LeanProve AI account"
-              : "Start your Lean 4 research journey today"}
+            {isLogin ? t.login.sign_in_subtitle : t.login.sign_up_subtitle}
           </p>
 
           {/* GitHub OAuth */}
@@ -99,26 +117,32 @@ export default function LoginPage() {
             className="w-full flex items-center justify-center gap-3 bg-bg-surface hover:bg-bg-elevated border border-border text-text-primary py-3 px-4 rounded-xl text-sm font-medium transition-all duration-150 mb-6"
           >
             <Github className="w-5 h-5" />
-            Continue with GitHub
+            {t.login.continue_github}
           </button>
 
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 h-px bg-border" />
-            <span className="text-text-muted text-xs">or continue with email</span>
+            <span className="text-text-muted text-xs">{t.login.or_continue_email}</span>
             <div className="flex-1 h-px bg-border" />
           </div>
+
+          {error && (
+            <div className="bg-error/10 border border-error/30 text-error text-sm rounded-xl px-4 py-3 mb-4">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                  Full name
+                  {t.login.full_name}
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Dr. Jane Smith"
+                  placeholder={t.login.full_name_placeholder}
                   required={!isLogin}
                   className="w-full bg-bg-surface border border-border rounded-xl px-4 py-3 text-text-primary placeholder-text-muted text-sm outline-none focus:border-primary transition-colors"
                 />
@@ -127,7 +151,7 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                Email address
+                {t.login.email_address}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
@@ -135,7 +159,7 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="researcher@university.edu"
+                  placeholder={t.login.email_placeholder}
                   required
                   className="w-full bg-bg-surface border border-border rounded-xl pl-10 pr-4 py-3 text-text-primary placeholder-text-muted text-sm outline-none focus:border-primary transition-colors"
                 />
@@ -144,14 +168,14 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                Password
+                {t.login.password}
               </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder={t.login.password_placeholder}
                   required
                   minLength={8}
                   className="w-full bg-bg-surface border border-border rounded-xl px-4 py-3 pr-11 text-text-primary placeholder-text-muted text-sm outline-none focus:border-primary transition-colors"
@@ -169,7 +193,7 @@ export default function LoginPage() {
             {isLogin && (
               <div className="text-right">
                 <Link href="#" className="text-xs text-primary hover:text-primary-light transition-colors">
-                  Forgot password?
+                  {t.login.forgot_password}
                 </Link>
               </div>
             )}
@@ -183,7 +207,7 @@ export default function LoginPage() {
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  {isLogin ? "Sign in" : "Create account"}
+                  {isLogin ? t.login.sign_in_btn : t.login.create_account_btn}
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -191,20 +215,20 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-sm text-text-muted mt-6">
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
+            {isLogin ? t.login.no_account : t.login.have_account}
             <button
               onClick={() => setIsLogin(!isLogin)}
               className="text-primary hover:text-primary-light transition-colors font-medium"
             >
-              {isLogin ? "Sign up free" : "Sign in"}
+              {isLogin ? t.login.sign_up_free : t.common.sign_in}
             </button>
           </p>
 
           <p className="text-center text-xs text-text-muted mt-4">
-            By continuing, you agree to our{" "}
-            <Link href="#" className="text-primary hover:underline">Terms</Link>
-            {" "}and{" "}
-            <Link href="#" className="text-primary hover:underline">Privacy Policy</Link>
+            {t.login.terms_prefix}
+            <Link href="#" className="text-primary hover:underline">{t.login.terms}</Link>
+            {t.login.and}
+            <Link href="#" className="text-primary hover:underline">{t.login.privacy_policy}</Link>
           </p>
         </div>
       </div>

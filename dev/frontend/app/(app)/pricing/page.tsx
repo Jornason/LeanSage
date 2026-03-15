@@ -10,103 +10,65 @@ import {
   ArrowRight,
   HelpCircle,
 } from "lucide-react";
-
-const PRICING_PLANS = [
-  {
-    name: "Free",
-    price: "$0",
-    period: "/month",
-    description: "Get started with Lean 4",
-    icon: Zap,
-    color: "text-text-secondary",
-    borderColor: "border-border",
-    features: [
-      "10 searches/month",
-      "5 proof generations/month",
-      "10 AI diagnoses/month",
-      "Basic LaTeX converter",
-      "Community support",
-    ],
-    limitations: [
-      "No real-time compilation",
-      "No proof collaboration",
-    ],
-    cta: "Current Plan",
-    ctaStyle: "bg-bg-elevated text-text-secondary cursor-default",
-    highlighted: false,
-  },
-  {
-    name: "Researcher",
-    price: "$19",
-    period: "/month",
-    description: "For active researchers",
-    icon: Users,
-    color: "text-primary",
-    borderColor: "border-primary",
-    features: [
-      "Unlimited searches",
-      "50 proof generations/month",
-      "Unlimited diagnostics",
-      "Real-time Lean compiler",
-      "Priority support",
-      "Search history export",
-      "Advanced LaTeX converter",
-    ],
-    limitations: [],
-    cta: "Start Free Trial",
-    ctaStyle: "bg-primary hover:bg-primary-dark text-white",
-    highlighted: true,
-  },
-  {
-    name: "Lab",
-    price: "$99",
-    period: "/month",
-    description: "For research groups",
-    icon: Building2,
-    color: "text-secondary",
-    borderColor: "border-secondary/50",
-    features: [
-      "Everything in Researcher",
-      "10 team seats included",
-      "Proof collaboration",
-      "Usage analytics dashboard",
-      "SSO integration",
-      "Dedicated support",
-      "Custom Mathlib indexing",
-    ],
-    limitations: [],
-    cta: "Contact Sales",
-    ctaStyle: "bg-secondary/20 hover:bg-secondary/30 border border-secondary/30 text-secondary",
-    highlighted: false,
-  },
-];
-
-const FAQ = [
-  {
-    q: "Can I switch plans at any time?",
-    a: "Yes, you can upgrade or downgrade at any time. Changes take effect at the start of your next billing cycle.",
-  },
-  {
-    q: "Do you offer academic discounts?",
-    a: "Yes! We offer 50% off the Researcher plan for verified students and academics. Contact us with your .edu email.",
-  },
-  {
-    q: "What happens when I exceed my usage limit?",
-    a: "On the Free plan, you'll be prompted to upgrade. We never charge overage fees without your consent.",
-  },
-  {
-    q: "Can I try the Researcher plan before committing?",
-    a: "Absolutely. We offer a 14-day free trial of the Researcher plan with no credit card required.",
-  },
-  {
-    q: "How does the Lab plan team seating work?",
-    a: "The Lab plan includes 10 seats. Additional seats can be added at $9/seat/month. Each member gets full Researcher-level access.",
-  },
-];
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export default function PricingPage() {
+  const { t } = useTranslation();
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+
+  const PRICING_PLANS = [
+    {
+      name: t.pricing.plan_free,
+      price: "$0",
+      period: t.pricing.per_month,
+      description: t.pricing.plan_free_desc,
+      icon: Zap,
+      color: "text-text-secondary",
+      borderColor: "border-border",
+      features: t.pricing.plan_free_features,
+      limitations: t.pricing.plan_free_limitations,
+      cta: t.pricing.cta_current_plan,
+      ctaStyle: "bg-bg-elevated text-text-secondary cursor-default",
+      highlighted: false,
+    },
+    {
+      name: t.pricing.plan_researcher,
+      price: "$19",
+      period: t.pricing.per_month,
+      description: t.pricing.plan_researcher_desc,
+      icon: Users,
+      color: "text-primary",
+      borderColor: "border-primary",
+      features: t.pricing.plan_researcher_features,
+      limitations: [] as readonly string[],
+      cta: t.pricing.cta_start_trial,
+      ctaStyle: "bg-primary hover:bg-primary-dark text-white",
+      highlighted: true,
+    },
+    {
+      name: t.pricing.plan_lab,
+      price: "$99",
+      period: t.pricing.per_month,
+      description: t.pricing.plan_lab_desc,
+      icon: Building2,
+      color: "text-secondary",
+      borderColor: "border-secondary/50",
+      features: t.pricing.plan_lab_features,
+      limitations: [] as readonly string[],
+      cta: t.pricing.cta_contact_sales,
+      ctaStyle: "bg-secondary/20 hover:bg-secondary/30 border border-secondary/30 text-secondary",
+      highlighted: false,
+    },
+  ];
+
+  const FAQ = [
+    { q: t.pricing.faq_1_q, a: t.pricing.faq_1_a },
+    { q: t.pricing.faq_2_q, a: t.pricing.faq_2_a },
+    { q: t.pricing.faq_3_q, a: t.pricing.faq_3_a },
+    { q: t.pricing.faq_4_q, a: t.pricing.faq_4_a },
+    { q: t.pricing.faq_5_q, a: t.pricing.faq_5_a },
+  ];
 
   return (
     <div className="h-[calc(100vh-56px)] overflow-y-auto">
@@ -114,11 +76,10 @@ export default function PricingPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-text-primary mb-3">
-            Simple, transparent pricing
+            {t.pricing.page_title}
           </h1>
           <p className="text-text-secondary max-w-lg mx-auto">
-            Start free, scale as your research grows. All plans include access
-            to Mathlib semantic search and AI-powered proof tools.
+            {t.pricing.page_description}
           </p>
 
           {/* Billing toggle */}
@@ -131,7 +92,7 @@ export default function PricingPage() {
                   : "text-text-secondary hover:text-text-primary"
               }`}
             >
-              Monthly
+              {t.pricing.monthly}
             </button>
             <button
               onClick={() => setBillingCycle("annual")}
@@ -141,8 +102,8 @@ export default function PricingPage() {
                   : "text-text-secondary hover:text-text-primary"
               }`}
             >
-              Annual
-              <span className="ml-1.5 text-xs text-success">Save 20%</span>
+              {t.pricing.annual}
+              <span className="ml-1.5 text-xs text-success">{t.pricing.save_percent}</span>
             </button>
           </div>
         </div>
@@ -166,7 +127,7 @@ export default function PricingPage() {
               >
                 {plan.highlighted && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs px-3 py-1 rounded-full font-medium">
-                    Most Popular
+                    {t.pricing.most_popular}
                   </div>
                 )}
 
@@ -218,11 +179,11 @@ export default function PricingPage() {
                 </ul>
 
                 <Link
-                  href={plan.name === "Lab" ? "#" : "/login"}
+                  href={plan.name === t.pricing.plan_lab ? "#" : "/login"}
                   className={`w-full text-center py-2.5 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${plan.ctaStyle}`}
                 >
                   {plan.cta}
-                  {plan.name !== "Free" && <ArrowRight className="w-3.5 h-3.5" />}
+                  {plan.name !== t.pricing.plan_free && <ArrowRight className="w-3.5 h-3.5" />}
                 </Link>
               </div>
             );
@@ -232,7 +193,7 @@ export default function PricingPage() {
         {/* FAQ */}
         <div className="max-w-2xl mx-auto">
           <h2 className="text-xl font-bold text-text-primary text-center mb-8">
-            Frequently Asked Questions
+            {t.pricing.faq_title}
           </h2>
           <div className="space-y-3">
             {FAQ.map((item, i) => (

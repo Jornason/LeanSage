@@ -26,53 +26,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
-const STATS = [
-  {
-    label: "Searches",
-    value: 47,
-    limit: "Unlimited",
-    icon: Search,
-    color: "text-blue-400",
-    bg: "bg-blue-500/10",
-    border: "border-blue-500/20",
-    trend: "+12 this week",
-    trendUp: true,
-  },
-  {
-    label: "Generations",
-    value: 12,
-    limit: "Unlimited",
-    icon: Code2,
-    color: "text-violet-400",
-    bg: "bg-violet-500/10",
-    border: "border-violet-500/20",
-    trend: "+5 this week",
-    trendUp: true,
-  },
-  {
-    label: "Diagnoses",
-    value: 8,
-    limit: "Unlimited",
-    icon: AlertTriangle,
-    color: "text-amber-400",
-    bg: "bg-amber-500/10",
-    border: "border-amber-500/20",
-    trend: "+2 this week",
-    trendUp: true,
-  },
-  {
-    label: "Compilations",
-    value: 23,
-    limit: "Unlimited",
-    icon: Code2,
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10",
-    border: "border-emerald-500/20",
-    trend: "+8 this week",
-    trendUp: true,
-  },
-];
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 const USAGE_DATA = [
   { day: "Mon", searches: 8, generations: 2, diagnoses: 1 },
@@ -122,24 +76,6 @@ const PROOF_SESSIONS = [
   },
 ];
 
-const STATUS_CONFIG = {
-  success: {
-    icon: <CheckCircle className="w-3.5 h-3.5" />,
-    label: "Compiled",
-    class: "text-success bg-success/10 border-success/20",
-  },
-  error: {
-    icon: <XCircle className="w-3.5 h-3.5" />,
-    label: "Error",
-    class: "text-error bg-error/10 border-error/20",
-  },
-  pending: {
-    icon: <Clock className="w-3.5 h-3.5" />,
-    label: "Pending",
-    class: "text-text-muted bg-bg-elevated border-border",
-  },
-};
-
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -157,7 +93,73 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const [sessionFilter, setSessionFilter] = useState("");
+
+  const STATS = [
+    {
+      label: t.dashboard.searches,
+      value: 47,
+      limit: t.common.unlimited,
+      icon: Search,
+      color: "text-blue-400",
+      bg: "bg-blue-500/10",
+      border: "border-blue-500/20",
+      trend: "+12 " + t.dashboard.this_week,
+      trendUp: true,
+    },
+    {
+      label: t.dashboard.generations,
+      value: 12,
+      limit: t.common.unlimited,
+      icon: Code2,
+      color: "text-violet-400",
+      bg: "bg-violet-500/10",
+      border: "border-violet-500/20",
+      trend: "+5 " + t.dashboard.this_week,
+      trendUp: true,
+    },
+    {
+      label: t.dashboard.diagnoses,
+      value: 8,
+      limit: t.common.unlimited,
+      icon: AlertTriangle,
+      color: "text-amber-400",
+      bg: "bg-amber-500/10",
+      border: "border-amber-500/20",
+      trend: "+2 " + t.dashboard.this_week,
+      trendUp: true,
+    },
+    {
+      label: t.dashboard.compilations,
+      value: 23,
+      limit: t.common.unlimited,
+      icon: Code2,
+      color: "text-emerald-400",
+      bg: "bg-emerald-500/10",
+      border: "border-emerald-500/20",
+      trend: "+8 " + t.dashboard.this_week,
+      trendUp: true,
+    },
+  ];
+
+  const STATUS_CONFIG = {
+    success: {
+      icon: <CheckCircle className="w-3.5 h-3.5" />,
+      label: t.dashboard.compiled,
+      class: "text-success bg-success/10 border-success/20",
+    },
+    error: {
+      icon: <XCircle className="w-3.5 h-3.5" />,
+      label: t.dashboard.error_status,
+      class: "text-error bg-error/10 border-error/20",
+    },
+    pending: {
+      icon: <Clock className="w-3.5 h-3.5" />,
+      label: t.dashboard.pending,
+      class: "text-text-muted bg-bg-elevated border-border",
+    },
+  };
 
   const filteredSessions = PROOF_SESSIONS.filter(
     (s) =>
@@ -173,10 +175,10 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-xl font-bold text-text-primary flex items-center gap-2">
               <LayoutDashboard className="w-5 h-5 text-primary" />
-              Dashboard
+              {t.dashboard.page_title}
             </h1>
             <p className="text-sm text-text-secondary mt-0.5">
-              Welcome back, Researcher. Here is your activity overview.
+              {t.dashboard.welcome}
             </p>
           </div>
           <Link
@@ -184,7 +186,7 @@ export default function DashboardPage() {
             className="btn-primary text-sm"
           >
             <Plus className="w-4 h-4" />
-            New Proof Session
+            {t.dashboard.new_proof_session}
           </Link>
         </div>
 
@@ -202,8 +204,8 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="text-2xl font-bold text-text-primary mb-0.5">{stat.value}</div>
-              <div className="text-xs text-text-muted">{stat.label} this month</div>
-              <div className="text-xs text-primary mt-1">Limit: {stat.limit}</div>
+              <div className="text-xs text-text-muted">{stat.label} {t.dashboard.this_month}</div>
+              <div className="text-xs text-primary mt-1">{t.dashboard.limit}: {stat.limit}</div>
             </div>
           ))}
         </div>
@@ -213,12 +215,12 @@ export default function DashboardPage() {
           {/* Proof sessions */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-text-primary">Proof Sessions</h2>
+              <h2 className="text-sm font-semibold text-text-primary">{t.dashboard.proof_sessions}</h2>
               <input
                 type="text"
                 value={sessionFilter}
                 onChange={(e) => setSessionFilter(e.target.value)}
-                placeholder="Filter sessions..."
+                placeholder={t.dashboard.filter_sessions}
                 className="bg-bg-surface border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary placeholder-text-muted outline-none focus:border-primary transition-colors w-48"
               />
             </div>
@@ -257,7 +259,7 @@ export default function DashboardPage() {
 
             {filteredSessions.length === 0 && (
               <div className="text-center py-8 text-text-muted text-sm">
-                No sessions match your filter.
+                {t.dashboard.no_sessions_match}
               </div>
             )}
           </div>
@@ -268,21 +270,21 @@ export default function DashboardPage() {
             <div className="card border-primary/30 bg-gradient-card">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-xs text-text-muted mb-0.5">Current Plan</p>
-                  <h3 className="text-base font-bold text-text-primary">Researcher</h3>
+                  <p className="text-xs text-text-muted mb-0.5">{t.dashboard.current_plan}</p>
+                  <h3 className="text-base font-bold text-text-primary">{t.pricing.plan_researcher}</h3>
                 </div>
                 <div className="flex items-center gap-1 text-xs text-primary font-medium bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
                   <Zap className="w-3 h-3" />
-                  Active
+                  {t.dashboard.active}
                 </div>
               </div>
               <div className="text-2xl font-bold text-text-primary mb-1">$19</div>
-              <div className="text-xs text-text-muted mb-4">/month • renews Apr 1, 2026</div>
+              <div className="text-xs text-text-muted mb-4">{t.dashboard.per_month} • {t.dashboard.renews} Apr 1, 2026</div>
               <Link
                 href="/#pricing"
                 className="block w-full text-center py-2 bg-primary/20 hover:bg-primary/30 border border-primary/30 text-primary text-xs font-medium rounded-lg transition-all"
               >
-                Upgrade to Lab
+                {t.dashboard.upgrade_to_lab}
               </Link>
             </div>
 
@@ -290,7 +292,7 @@ export default function DashboardPage() {
             <div className="card border-border">
               <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-4 flex items-center gap-2">
                 <TrendingUp className="w-3.5 h-3.5" />
-                Weekly Usage
+                {t.dashboard.weekly_usage}
               </h3>
               <div className="h-40">
                 <ResponsiveContainer width="100%" height="100%">
@@ -334,9 +336,9 @@ export default function DashboardPage() {
               </div>
               <div className="flex gap-3 mt-2">
                 {[
-                  { color: "#6366F1", label: "Search" },
-                  { color: "#8B5CF6", label: "Generate" },
-                  { color: "#F59E0B", label: "Diagnose" },
+                  { color: "#6366F1", label: t.dashboard.search_legend },
+                  { color: "#8B5CF6", label: t.dashboard.generate_legend },
+                  { color: "#F59E0B", label: t.dashboard.diagnose_legend },
                 ].map((l) => (
                   <div key={l.label} className="flex items-center gap-1.5">
                     <div
@@ -352,14 +354,14 @@ export default function DashboardPage() {
             {/* Quick actions */}
             <div className="card border-border">
               <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">
-                Quick Actions
+                {t.dashboard.quick_actions}
               </h3>
               <div className="space-y-2">
                 {[
-                  { href: "/search", label: "Search Mathlib", icon: Search },
-                  { href: "/workspace", label: "New Proof", icon: Code2 },
-                  { href: "/diagnose", label: "Diagnose Code", icon: AlertTriangle },
-                  { href: "/convert", label: "Convert LaTeX", icon: ArrowRightLeft },
+                  { href: "/search", label: t.dashboard.search_mathlib, icon: Search },
+                  { href: "/workspace", label: t.dashboard.new_proof, icon: Code2 },
+                  { href: "/diagnose", label: t.dashboard.diagnose_code, icon: AlertTriangle },
+                  { href: "/convert", label: t.dashboard.convert_latex, icon: ArrowRightLeft },
                 ].map((action) => (
                   <Link
                     key={action.href}

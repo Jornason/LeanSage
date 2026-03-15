@@ -10,23 +10,24 @@ import {
   LayoutDashboard,
   Settings,
   CreditCard,
-  LogOut,
   ChevronDown,
   Bell,
 } from "lucide-react";
-
-const NAV_ITEMS = [
-  { href: "/search", label: "Semantic Search", icon: Search },
-  { href: "/workspace", label: "Proof Workspace", icon: Code2 },
-  { href: "/diagnose", label: "Error Diagnosis", icon: AlertTriangle },
-  { href: "/convert", label: "LaTeX Converter", icon: ArrowRightLeft },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/pricing", label: "Pricing", icon: CreditCard },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { t } = useTranslation();
+
+  const NAV_ITEMS = [
+    { href: "/search", label: t.nav.semantic_search, icon: Search },
+    { href: "/workspace", label: t.nav.proof_workspace, icon: Code2 },
+    { href: "/diagnose", label: t.nav.error_diagnosis, icon: AlertTriangle },
+    { href: "/convert", label: t.nav.latex_converter, icon: ArrowRightLeft },
+    { href: "/dashboard", label: t.nav.dashboard, icon: LayoutDashboard },
+    { href: "/pricing", label: t.nav.pricing, icon: CreditCard },
+    { href: "/settings", label: t.nav.settings, icon: Settings },
+  ];
 
   return (
     <div className="min-h-screen bg-bg-dark flex flex-col">
@@ -38,7 +39,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <span className="text-white text-xs font-bold">LP</span>
           </div>
           <span className="font-semibold text-text-primary text-sm hidden md:block">
-            LeanProve AI
+            {t.common.app_name}
           </span>
         </Link>
 
@@ -68,7 +69,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {/* Usage indicator */}
           <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-bg-dark rounded-lg border border-border text-xs text-text-secondary">
             <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-            <span>47 searches</span>
+            <span>47 {t.nav.searches_count}</span>
           </div>
 
           {/* Notification */}
@@ -82,7 +83,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               R
             </div>
             <span className="text-xs text-text-secondary hidden md:block group-hover:text-text-primary transition-colors">
-              Researcher
+              {t.nav.researcher}
             </span>
             <ChevronDown className="w-3 h-3 text-text-muted hidden md:block" />
           </div>

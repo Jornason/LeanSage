@@ -16,49 +16,7 @@ import {
   Star,
   ChevronRight,
 } from "lucide-react";
-
-const FEATURES = [
-  {
-    icon: Search,
-    title: "Mathlib Semantic Search",
-    description:
-      "Search 200k+ Mathlib theorems using natural language. Find the exact lemma you need in seconds, not hours.",
-    color: "text-blue-400",
-    bg: "bg-blue-500/10",
-    border: "border-blue-500/20",
-    href: "/search",
-  },
-  {
-    icon: Cpu,
-    title: "AI Proof Generation",
-    description:
-      "Describe your theorem in plain language and get a compilable Lean 4 proof draft. 40%+ compilation success rate.",
-    color: "text-violet-400",
-    bg: "bg-violet-500/10",
-    border: "border-violet-500/20",
-    href: "/workspace",
-  },
-  {
-    icon: AlertTriangle,
-    title: "Error Diagnosis",
-    description:
-      "Paste your broken Lean code and get an AI-powered explanation plus actionable fix suggestions.",
-    color: "text-amber-400",
-    bg: "bg-amber-500/10",
-    border: "border-amber-500/20",
-    href: "/diagnose",
-  },
-  {
-    icon: ArrowRightLeft,
-    title: "LaTeX ↔ Lean Converter",
-    description:
-      "Bidirectional conversion between LaTeX math expressions and Lean 4 type signatures with KaTeX preview.",
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10",
-    border: "border-emerald-500/20",
-    href: "/convert",
-  },
-];
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 const DEMO_LEAN_CODE = `import Mathlib.Topology.Algebra.Group.Basic
 
@@ -71,81 +29,103 @@ theorem sum_continuous {α β : Type*}
     Continuous (fun x => f x + g x) := by
   exact Continuous.add hf hg`;
 
-const TESTIMONIALS = [
-  {
-    name: "Dr. Sarah Chen",
-    role: "Mathematics PhD, MIT",
-    avatar: "SC",
-    text: "LeanProve AI cut my Lean 4 learning curve from months to weeks. The semantic search alone saves me hours per week.",
-    rating: 5,
-  },
-  {
-    name: "Prof. Marcus Weber",
-    role: "Formal Methods, TU Berlin",
-    avatar: "MW",
-    text: "The error diagnosis feature is remarkable. It explains Lean errors in plain language that my students can actually understand.",
-    rating: 5,
-  },
-  {
-    name: "Yuki Tanaka",
-    role: "Lean 4 Enthusiast",
-    avatar: "YT",
-    text: "Finally, a tool that bridges the gap between LaTeX papers and Lean formalization. The converter is a game changer.",
-    rating: 5,
-  },
-];
-
-const PRICING = [
-  {
-    name: "Free",
-    price: "$0",
-    period: "/month",
-    description: "Get started with Lean 4",
-    features: [
-      "10 searches/month",
-      "10 AI diagnoses/month",
-      "Basic LaTeX converter",
-      "Community support",
-    ],
-    cta: "Start Free",
-    highlighted: false,
-  },
-  {
-    name: "Researcher",
-    price: "$19",
-    period: "/month",
-    description: "For active researchers",
-    features: [
-      "Unlimited searches",
-      "50 proof generations/month",
-      "Unlimited diagnostics",
-      "Real-time Lean compiler",
-      "Priority support",
-    ],
-    cta: "Start Trial",
-    highlighted: true,
-  },
-  {
-    name: "Lab",
-    price: "$99",
-    period: "/month",
-    description: "For research groups",
-    features: [
-      "Everything in Researcher",
-      "10 team seats",
-      "Proof collaboration",
-      "Usage analytics",
-      "SSO integration",
-      "Dedicated support",
-    ],
-    cta: "Contact Sales",
-    highlighted: false,
-  },
-];
-
 export default function LandingPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const { t } = useTranslation();
+
+  const FEATURES = [
+    {
+      icon: Search,
+      title: t.landing.feature_search_title,
+      description: t.landing.feature_search_desc,
+      color: "text-blue-400",
+      bg: "bg-blue-500/10",
+      border: "border-blue-500/20",
+      href: "/search",
+    },
+    {
+      icon: Cpu,
+      title: t.landing.feature_ai_title,
+      description: t.landing.feature_ai_desc,
+      color: "text-violet-400",
+      bg: "bg-violet-500/10",
+      border: "border-violet-500/20",
+      href: "/workspace",
+    },
+    {
+      icon: AlertTriangle,
+      title: t.landing.feature_diagnosis_title,
+      description: t.landing.feature_diagnosis_desc,
+      color: "text-amber-400",
+      bg: "bg-amber-500/10",
+      border: "border-amber-500/20",
+      href: "/diagnose",
+    },
+    {
+      icon: ArrowRightLeft,
+      title: t.landing.feature_converter_title,
+      description: t.landing.feature_converter_desc,
+      color: "text-emerald-400",
+      bg: "bg-emerald-500/10",
+      border: "border-emerald-500/20",
+      href: "/convert",
+    },
+  ];
+
+  const TESTIMONIALS = [
+    {
+      name: t.landing.testimonial_1_name,
+      role: t.landing.testimonial_1_role,
+      avatar: "SC",
+      text: t.landing.testimonial_1_text,
+      rating: 5,
+    },
+    {
+      name: t.landing.testimonial_2_name,
+      role: t.landing.testimonial_2_role,
+      avatar: "MW",
+      text: t.landing.testimonial_2_text,
+      rating: 5,
+    },
+    {
+      name: t.landing.testimonial_3_name,
+      role: t.landing.testimonial_3_role,
+      avatar: "YT",
+      text: t.landing.testimonial_3_text,
+      rating: 5,
+    },
+  ];
+
+  const PRICING = [
+    {
+      name: t.landing.plan_free,
+      price: "$0",
+      period: t.landing.per_month,
+      description: t.landing.plan_free_desc,
+      features: t.landing.plan_free_features,
+      cta: t.landing.cta_start_free,
+      highlighted: false,
+    },
+    {
+      name: t.landing.plan_researcher,
+      price: "$19",
+      period: t.landing.per_month,
+      description: t.landing.plan_researcher_desc,
+      features: t.landing.plan_researcher_features,
+      cta: t.landing.cta_start_trial,
+      highlighted: true,
+    },
+    {
+      name: t.landing.plan_lab,
+      price: "$99",
+      period: t.landing.per_month,
+      description: t.landing.plan_lab_desc,
+      features: t.landing.plan_lab_features,
+      cta: t.landing.cta_contact_sales,
+      highlighted: false,
+    },
+  ];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,32 +143,32 @@ export default function LandingPage() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
               <span className="text-white text-xs font-bold">LP</span>
             </div>
-            <span className="font-semibold text-text-primary">LeanProve AI</span>
+            <span className="font-semibold text-text-primary">{t.common.app_name}</span>
           </div>
           <div className="hidden md:flex items-center gap-6 text-sm text-text-secondary">
-            <Link href="/search" className="hover:text-text-primary transition-colors">Search</Link>
-            <Link href="/workspace" className="hover:text-text-primary transition-colors">Workspace</Link>
-            <Link href="/convert" className="hover:text-text-primary transition-colors">Converter</Link>
-            <Link href="/#pricing" className="hover:text-text-primary transition-colors">Pricing</Link>
+            <Link href="/search" className="hover:text-text-primary transition-colors">{t.common.search}</Link>
+            <Link href="/workspace" className="hover:text-text-primary transition-colors">{t.common.workspace}</Link>
+            <Link href="/convert" className="hover:text-text-primary transition-colors">{t.common.converter}</Link>
+            <Link href="/#pricing" className="hover:text-text-primary transition-colors">{t.common.pricing}</Link>
           </div>
           <div className="flex items-center gap-3">
             <Link
               href="/demo"
               className="text-sm text-emerald-400 hover:text-emerald-300 font-medium transition-colors border border-emerald-400/30 rounded-lg px-3 py-1.5"
             >
-              Try Demo
+              {t.common.try_demo}
             </Link>
             <Link
               href="/login"
               className="text-sm text-text-secondary hover:text-text-primary transition-colors"
             >
-              Sign in
+              {t.common.sign_in}
             </Link>
             <Link
               href="/login"
               className="btn-primary text-sm py-1.5 px-4"
             >
-              Get Started
+              {t.common.get_started}
             </Link>
           </div>
         </div>
@@ -211,23 +191,22 @@ export default function LandingPage() {
         <div className="relative max-w-5xl mx-auto px-6 pt-20 pb-24 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-8">
             <Zap className="w-3 h-3" />
-            Powered by Claude AI + Lean 4 LSP
+            {t.landing.badge}
           </div>
 
           <h1 className="text-5xl md:text-6xl font-bold text-text-primary leading-tight mb-6">
-            AI-Powered{" "}
+            {t.landing.hero_title_1}{" "}
             <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Lean 4
+              {t.landing.hero_title_2}
             </span>{" "}
-            Assistant for{" "}
+            {t.landing.hero_title_4}{" "}
             <span className="bg-gradient-to-r from-secondary to-blue-400 bg-clip-text text-transparent">
-              Math Research
+              {t.landing.hero_title_3}
             </span>
           </h1>
 
           <p className="text-lg text-text-secondary max-w-2xl mx-auto mb-10 leading-relaxed">
-            Search 200k+ Mathlib theorems semantically, generate proof drafts from natural language,
-            diagnose compilation errors, and convert between LaTeX and Lean 4.
+            {t.landing.hero_description}
           </p>
 
           {/* Search bar */}
@@ -240,14 +219,14 @@ export default function LandingPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search Mathlib: e.g. 'sum of continuous functions is continuous'"
+                  placeholder={t.landing.search_placeholder}
                   className="flex-1 bg-transparent px-4 py-4 text-text-primary placeholder-text-muted outline-none text-sm"
                 />
                 <button
                   type="submit"
                   className="m-2 bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                 >
-                  Search
+                  {t.landing.search_btn}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -257,15 +236,15 @@ export default function LandingPage() {
           <div className="flex items-center justify-center gap-6 text-sm text-text-muted">
             <div className="flex items-center gap-1.5">
               <CheckCircle className="w-4 h-4 text-success" />
-              200k+ theorems indexed
+              {t.landing.stat_theorems}
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle className="w-4 h-4 text-success" />
-              No credit card required
+              {t.landing.stat_no_credit_card}
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle className="w-4 h-4 text-success" />
-              Free tier available
+              {t.landing.stat_free_tier}
             </div>
           </div>
         </div>
@@ -276,10 +255,10 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl font-bold text-text-primary mb-4">
-              Everything you need for Lean 4 research
+              {t.landing.features_heading}
             </h2>
             <p className="text-text-secondary max-w-xl mx-auto">
-              From theorem discovery to proof verification — LeanProve AI covers the full formal mathematics workflow.
+              {t.landing.features_subheading}
             </p>
           </div>
 
@@ -296,7 +275,7 @@ export default function LandingPage() {
                 <h3 className="font-semibold text-text-primary mb-2">{feature.title}</h3>
                 <p className="text-sm text-text-secondary leading-relaxed">{feature.description}</p>
                 <div className={`mt-4 flex items-center gap-1 text-xs ${feature.color} font-medium opacity-0 group-hover:opacity-100 transition-opacity`}>
-                  Try it now <ChevronRight className="w-3 h-3" />
+                  {t.common.try_it_now} <ChevronRight className="w-3 h-3" />
                 </div>
               </Link>
             ))}
@@ -308,8 +287,8 @@ export default function LandingPage() {
       <section className="py-20 px-6 bg-bg-surface/30">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-text-primary mb-4">See it in action</h2>
-            <p className="text-text-secondary">From natural language to compilable Lean 4 proof</p>
+            <h2 className="text-3xl font-bold text-text-primary mb-4">{t.landing.demo_heading}</h2>
+            <p className="text-text-secondary">{t.landing.demo_subheading}</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -319,14 +298,12 @@ export default function LandingPage() {
                 <div className="w-2 h-2 rounded-full bg-error" />
                 <div className="w-2 h-2 rounded-full bg-warning" />
                 <div className="w-2 h-2 rounded-full bg-success" />
-                <span className="ml-2 text-xs text-text-muted font-mono">Natural Language</span>
+                <span className="ml-2 text-xs text-text-muted font-mono">{t.landing.demo_natural_language}</span>
               </div>
               <div className="bg-bg-dark rounded-lg p-4 text-sm text-text-secondary leading-relaxed">
-                <p className="text-text-primary font-medium mb-2">Theorem description:</p>
+                <p className="text-text-primary font-medium mb-2">{t.landing.demo_theorem_desc_label}</p>
                 <p className="italic">
-                  "Prove that for topological spaces α and β with continuous addition on β,
-                  if f and g are both continuous functions from α to β, then their pointwise
-                  sum f + g is also continuous."
+                  &ldquo;{t.landing.demo_theorem_desc}&rdquo;
                 </p>
               </div>
             </div>
@@ -337,9 +314,9 @@ export default function LandingPage() {
                 <div className="w-2 h-2 rounded-full bg-error" />
                 <div className="w-2 h-2 rounded-full bg-warning" />
                 <div className="w-2 h-2 rounded-full bg-success" />
-                <span className="ml-2 text-xs text-text-muted font-mono">Generated Lean 4</span>
+                <span className="ml-2 text-xs text-text-muted font-mono">{t.landing.demo_generated_lean}</span>
                 <span className="ml-auto text-xs text-success flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3" /> Compiled
+                  <CheckCircle className="w-3 h-3" /> {t.landing.demo_compiled}
                 </span>
               </div>
               <pre className="bg-bg-dark rounded-lg p-4 overflow-x-auto">
@@ -365,7 +342,7 @@ export default function LandingPage() {
 
           <div className="text-center mt-8">
             <Link href="/workspace" className="btn-primary inline-flex">
-              Try the Proof Workspace
+              {t.landing.demo_try_workspace}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -377,28 +354,28 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-text-primary mb-4">
-              Trusted by mathematics researchers
+              {t.landing.testimonials_heading}
             </h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t) => (
-              <div key={t.name} className="card border-border">
+            {TESTIMONIALS.map((item) => (
+              <div key={item.name} className="card border-border">
                 <div className="flex items-center gap-1 mb-3">
-                  {Array.from({ length: t.rating }).map((_, i) => (
+                  {Array.from({ length: item.rating }).map((_, i) => (
                     <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                   ))}
                 </div>
                 <p className="text-sm text-text-secondary leading-relaxed mb-4 italic">
-                  "{t.text}"
+                  &ldquo;{item.text}&rdquo;
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-xs font-bold">
-                    {t.avatar}
+                    {item.avatar}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-text-primary">{t.name}</p>
-                    <p className="text-xs text-text-muted">{t.role}</p>
+                    <p className="text-sm font-medium text-text-primary">{item.name}</p>
+                    <p className="text-xs text-text-muted">{item.role}</p>
                   </div>
                 </div>
               </div>
@@ -411,8 +388,8 @@ export default function LandingPage() {
       <section id="pricing" className="py-20 px-6 bg-bg-surface/30">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-text-primary mb-4">Simple, transparent pricing</h2>
-            <p className="text-text-secondary">Start free, scale as your research grows</p>
+            <h2 className="text-3xl font-bold text-text-primary mb-4">{t.landing.pricing_heading}</h2>
+            <p className="text-text-secondary">{t.landing.pricing_subheading}</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -427,7 +404,7 @@ export default function LandingPage() {
               >
                 {plan.highlighted && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs px-3 py-1 rounded-full font-medium">
-                    Most Popular
+                    {t.landing.plan_most_popular}
                   </div>
                 )}
                 <div className="mb-6">
@@ -470,13 +447,13 @@ export default function LandingPage() {
               <div className="w-6 h-6 rounded-md bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
                 <span className="text-white text-xs font-bold">LP</span>
               </div>
-              <span className="font-semibold text-text-primary">LeanProve AI</span>
-              <span className="text-text-muted text-sm ml-2">© 2026</span>
+              <span className="font-semibold text-text-primary">{t.common.app_name}</span>
+              <span className="text-text-muted text-sm ml-2">{t.common.copyright}</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-text-secondary">
-              <Link href="/search" className="hover:text-text-primary transition-colors">Search</Link>
-              <Link href="/workspace" className="hover:text-text-primary transition-colors">Workspace</Link>
-              <Link href="/convert" className="hover:text-text-primary transition-colors">Converter</Link>
+              <Link href="/search" className="hover:text-text-primary transition-colors">{t.common.search}</Link>
+              <Link href="/workspace" className="hover:text-text-primary transition-colors">{t.common.workspace}</Link>
+              <Link href="/convert" className="hover:text-text-primary transition-colors">{t.common.converter}</Link>
               <a
                 href="https://github.com"
                 className="hover:text-text-primary transition-colors flex items-center gap-1"
@@ -484,7 +461,7 @@ export default function LandingPage() {
                 rel="noopener noreferrer"
               >
                 <Github className="w-4 h-4" />
-                GitHub
+                {t.common.github}
               </a>
               <a
                 href="https://leanprover-community.github.io/mathlib4_docs/"
@@ -493,7 +470,7 @@ export default function LandingPage() {
                 rel="noopener noreferrer"
               >
                 <BookOpen className="w-4 h-4" />
-                Mathlib Docs
+                {t.common.mathlib_docs}
               </a>
             </div>
           </div>

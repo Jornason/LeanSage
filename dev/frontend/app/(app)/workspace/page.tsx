@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { LeanEditor } from "@/components/editor/LeanEditor";
 import toast from "react-hot-toast";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 const DEFAULT_CODE = `import Mathlib.Tactic
 
@@ -50,6 +51,7 @@ interface CompilationError {
 type AITab = "generate" | "diagnose" | "explain";
 
 export default function WorkspacePage() {
+  const { t } = useTranslation();
   const [code, setCode] = useState(DEFAULT_CODE);
   const [compileStatus, setCompileStatus] = useState<CompileStatus>("idle");
   const [errors, setErrors] = useState<CompilationError[]>([]);
@@ -67,7 +69,6 @@ export default function WorkspacePage() {
     setErrors([]);
     try {
       await new Promise((r) => setTimeout(r, 2000));
-      // Simulate success or error based on code content
       if (code.includes("omega_bad") || code.includes("sorry_bad")) {
         setCompileStatus("error");
         setErrors([
@@ -81,7 +82,7 @@ export default function WorkspacePage() {
       } else {
         setCompileStatus("success");
         setErrors([]);
-        toast.success("Compiled successfully!");
+        toast.success(t.workspace.compiled_ok);
       }
     } catch (err) {
       setCompileStatus("error");
@@ -108,7 +109,7 @@ theorem generated_proof (n : ℕ) : n + 0 = n := by
 
   const insertGeneratedCode = () => {
     setCode(generatedCode);
-    toast.success("Code inserted into editor");
+    toast.success(t.workspace.insert_into_editor);
   };
 
   const handleDiagnose = async () => {
@@ -134,25 +135,31 @@ theorem generated_proof (n : ℕ) : n + 0 = n := by
   };
 
   const statusConfig = {
-    idle: { icon: null, text: "Ready", color: "text-text-muted" },
+    idle: { icon: null, text: t.workspace.ready, color: "text-text-muted" },
     compiling: {
       icon: <Loader2 className="w-3.5 h-3.5 animate-spin" />,
-      text: "Compiling...",
+      text: t.workspace.compiling,
       color: "text-warning",
     },
     success: {
       icon: <CheckCircle className="w-3.5 h-3.5" />,
-      text: "Compiled OK",
+      text: t.workspace.compiled_ok,
       color: "text-success",
     },
     error: {
       icon: <XCircle className="w-3.5 h-3.5" />,
-      text: `${errors.length} error${errors.length !== 1 ? "s" : ""}`,
+      text: `${errors.length} ${t.workspace.errors_count}`,
       color: "text-error",
     },
   };
 
   const status = statusConfig[compileStatus];
+
+  const aiTabLabels: Record<AITab, string> = {
+    generate: t.common.generate,
+    diagnose: t.common.diagnose,
+    explain: "explain",
+  };
 
   return (
     <div className="ide-container h-[calc(100vh-56px)]">
@@ -160,11 +167,11 @@ theorem generated_proof (n : ℕ) : n + 0 = n := by
       <aside className="border-r border-border bg-bg-surface/50 ide-file-tree flex flex-col">
         <div className="px-3 py-2.5 border-b border-border flex items-center justify-between">
           <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
-            Files
+            {t.workspace.files}
           </span>
           <button
             className="p-0.5 text-text-muted hover:text-text-primary transition-colors"
-            title="New file"
+            title={t.workspace.new_file}
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
@@ -194,7 +201,7 @@ theorem generated_proof (n : ℕ) : n + 0 = n := by
         <div className="border-t border-border p-3">
           <div className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2 flex items-center gap-1.5">
             <Info className="w-3 h-3" />
-            Proof Goal
+            {t.workspace.proof_goal}
           </div>
           <div className="bg-bg-dark rounded-lg p-2.5 proof-goal text-xs">
             {goalText}
@@ -216,10 +223,10 @@ theorem generated_proof (n : ℕ) : n + 0 = n := by
             <button
               onClick={() => {
                 navigator.clipboard.writeText(code);
-                toast.success("Copied to clipboard");
+                toast.success(t.common.copied);
               }}
               className="p-1.5 text-text-muted hover:text-text-primary hover:bg-bg-elevated rounded-md transition-all"
-              title="Copy code"
+              title={t.workspace.copy_code}
             >
               <Copy className="w-3.5 h-3.5" />
             </button>
@@ -233,7 +240,7 @@ theorem generated_proof (n : ℕ) : n + 0 = n := by
               ) : (
                 <Play className="w-3.5 h-3.5" />
               )}
-              Compile
+              {t.common.compile}
             </button>
           </div>
         </div>
@@ -258,7 +265,7 @@ theorem generated_proof (n : ℕ) : n + 0 = n := by
               <XCircle className="w-3 h-3" />
               {errors.map((e) => (
                 <span key={`${e.line}-${e.column}`}>
-                  Line {e.line}: {e.message}
+                  {t.workspace.line} {e.line}: {e.message}
                 </span>
               ))}
             </div>
@@ -289,7 +296,7 @@ theorem generated_proof (n : ℕ) : n + 0 = n := by
                 {tab === "generate" && <Wand2 className="w-3.5 h-3.5 inline mr-1.5" />}
                 {tab === "diagnose" && <AlertTriangle className="w-3.5 h-3.5 inline mr-1.5" />}
                 {tab === "explain" && <BookOpen className="w-3.5 h-3.5 inline mr-1.5" />}
-                {tab}
+                {aiTabLabels[tab]}
               </button>
             ))}
           </div>
@@ -301,12 +308,12 @@ theorem generated_proof (n : ℕ) : n + 0 = n := by
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-medium text-text-secondary mb-2 block">
-                  Describe your theorem
+                  {t.workspace.describe_theorem}
                 </label>
                 <textarea
                   value={generateInput}
                   onChange={(e) => setGenerateInput(e.target.value)}
-                  placeholder="e.g. Prove that for all natural numbers n, n + 0 = n"
+                  placeholder={t.workspace.theorem_placeholder}
                   rows={4}
                   className="w-full bg-bg-dark border border-border rounded-xl px-3 py-2.5 text-sm text-text-primary placeholder-text-muted outline-none focus:border-primary transition-colors resize-none"
                 />
@@ -321,7 +328,7 @@ theorem generated_proof (n : ℕ) : n + 0 = n := by
                 ) : (
                   <Wand2 className="w-4 h-4" />
                 )}
-                {generating ? "Generating..." : "Generate Proof"}
+                {generating ? t.workspace.generating : t.workspace.generate_proof}
               </button>
 
               {generatedCode && (
@@ -329,7 +336,7 @@ theorem generated_proof (n : ℕ) : n + 0 = n := by
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-success flex items-center gap-1.5">
                       <CheckCircle className="w-3.5 h-3.5" />
-                      Generated
+                      {t.workspace.generated}
                     </span>
                   </div>
                   <pre className="bg-bg-dark rounded-xl p-3 overflow-x-auto">
@@ -342,7 +349,7 @@ theorem generated_proof (n : ℕ) : n + 0 = n := by
                     className="w-full flex items-center justify-center gap-2 bg-success/20 hover:bg-success/30 border border-success/30 text-success py-2 rounded-xl text-sm font-medium transition-all"
                   >
                     <ChevronRight className="w-4 h-4" />
-                    Insert into Editor
+                    {t.workspace.insert_into_editor}
                   </button>
                 </div>
               )}
@@ -352,8 +359,7 @@ theorem generated_proof (n : ℕ) : n + 0 = n := by
           {activeAITab === "diagnose" && (
             <div className="space-y-4">
               <p className="text-xs text-text-secondary leading-relaxed">
-                Click below to diagnose errors in the current editor code. AI will explain
-                errors and suggest fixes.
+                {t.workspace.diagnose_description}
               </p>
               <button
                 onClick={handleDiagnose}
@@ -365,7 +371,7 @@ theorem generated_proof (n : ℕ) : n + 0 = n := by
                 ) : (
                   <AlertTriangle className="w-4 h-4" />
                 )}
-                {diagnosing ? "Analyzing..." : "Diagnose Current Code"}
+                {diagnosing ? t.workspace.analyzing : t.workspace.diagnose_current}
               </button>
 
               {diagnosisResult && (
@@ -373,7 +379,7 @@ theorem generated_proof (n : ℕ) : n + 0 = n := by
                   {diagnosisResult.diagnostics.map((d: any, i: number) => (
                     <div key={i} className="bg-bg-dark rounded-xl p-3 border border-border">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-xs text-text-muted font-mono">Line {d.line}</span>
+                        <span className="text-xs text-text-muted font-mono">{t.workspace.line} {d.line}</span>
                         <span
                           className={`text-xs px-2 py-0.5 rounded-full ${
                             d.severity === "error"
@@ -399,22 +405,18 @@ theorem generated_proof (n : ℕ) : n + 0 = n := by
           {activeAITab === "explain" && (
             <div className="space-y-4">
               <p className="text-xs text-text-secondary leading-relaxed">
-                Select a tactic in the editor to get a plain-language explanation of what it does.
+                {t.workspace.explain_description}
               </p>
               <div className="bg-bg-dark rounded-xl p-4 border border-border/50">
                 <div className="text-xs text-text-muted mb-2 font-mono">ring</div>
                 <p className="text-xs text-text-secondary leading-relaxed">
-                  The <code className="font-mono text-primary">ring</code> tactic proves goals that follow
-                  from the axioms of a commutative (semi)ring. It closes goals like{" "}
-                  <code className="font-mono text-primary">a + b = b + a</code> automatically.
+                  {t.workspace.ring_explanation}
                 </p>
               </div>
               <div className="bg-bg-dark rounded-xl p-4 border border-border/50">
                 <div className="text-xs text-text-muted mb-2 font-mono">simp</div>
                 <p className="text-xs text-text-secondary leading-relaxed">
-                  The <code className="font-mono text-primary">simp</code> tactic simplifies the goal
-                  using a collection of lemmas marked with the <code className="font-mono text-primary">@[simp]</code>{" "}
-                  attribute. It can close many routine goals automatically.
+                  {t.workspace.simp_explanation}
                 </p>
               </div>
             </div>

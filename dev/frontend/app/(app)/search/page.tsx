@@ -18,6 +18,7 @@ import {
 import { MathFormula } from "@/components/math/MathFormula";
 import { api } from "@/lib/api";
 import toast from "react-hot-toast";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 const MODULES = [
   "Topology",
@@ -112,6 +113,7 @@ function getSimilarityColor(score: number) {
 }
 
 function ResultCard({ result }: { result: SearchResult }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
@@ -123,7 +125,7 @@ function ResultCard({ result }: { result: SearchResult }) {
 
   const copyFullSignature = () => {
     navigator.clipboard.writeText(result.type_signature);
-    toast.success("Copied type signature");
+    toast.success(t.common.copied);
   };
 
   return (
@@ -143,7 +145,7 @@ function ResultCard({ result }: { result: SearchResult }) {
                 result.similarity
               )}`}
             >
-              {(result.similarity * 100).toFixed(1)}% match
+              {(result.similarity * 100).toFixed(1)}% {t.search.match}
             </span>
           </div>
 
@@ -165,9 +167,9 @@ function ResultCard({ result }: { result: SearchResult }) {
               {result.type_signature.length > 100 && (
                 <button className="mt-1 flex items-center gap-1 text-xs text-primary hover:text-primary-light transition-colors">
                   {expanded ? (
-                    <>Show less <ChevronUp className="w-3 h-3" /></>
+                    <>{t.common.show_less} <ChevronUp className="w-3 h-3" /></>
                   ) : (
-                    <>Show full <ChevronDown className="w-3 h-3" /></>
+                    <>{t.common.show_full} <ChevronDown className="w-3 h-3" /></>
                   )}
                 </button>
               )}
@@ -195,14 +197,14 @@ function ResultCard({ result }: { result: SearchResult }) {
           ) : (
             <Copy className="w-3.5 h-3.5" />
           )}
-          {copied ? "Copied!" : "Copy name"}
+          {copied ? t.common.copied : t.common.copy_name}
         </button>
         <button
           onClick={copyFullSignature}
           className="flex items-center gap-1.5 text-xs text-text-secondary hover:text-text-primary px-3 py-1.5 bg-bg-elevated hover:bg-border rounded-lg transition-all"
         >
           <Copy className="w-3.5 h-3.5" />
-          Copy signature
+          {t.common.copy_signature}
         </button>
         <a
           href={result.doc_url}
@@ -211,7 +213,7 @@ function ResultCard({ result }: { result: SearchResult }) {
           className="flex items-center gap-1.5 text-xs text-primary hover:text-primary-light px-3 py-1.5 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-lg transition-all ml-auto"
         >
           <ExternalLink className="w-3.5 h-3.5" />
-          Mathlib Docs
+          {t.common.mathlib_docs}
         </a>
       </div>
     </div>
@@ -219,6 +221,7 @@ function ResultCard({ result }: { result: SearchResult }) {
 }
 
 function SearchPageContent() {
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialQuery = searchParams.get("q") || "";
@@ -281,7 +284,7 @@ function SearchPageContent() {
           <div>
             <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3 flex items-center gap-2">
               <Filter className="w-3.5 h-3.5" />
-              Modules
+              {t.search.modules}
             </h3>
             <div className="space-y-1.5">
               {MODULES.map((module) => (
@@ -315,7 +318,7 @@ function SearchPageContent() {
           <div>
             <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3 flex items-center gap-2">
               <Sliders className="w-3.5 h-3.5" />
-              Results count
+              {t.search.results_count}
             </h3>
             <div className="space-y-2">
               <input
@@ -338,7 +341,7 @@ function SearchPageContent() {
             <div>
               <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3 flex items-center gap-2">
                 <Clock className="w-3.5 h-3.5" />
-                Recent
+                {t.search.recent}
               </h3>
               <div className="space-y-1">
                 {searchHistory.map((h) => (
@@ -377,7 +380,7 @@ function SearchPageContent() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Describe the theorem in natural language... (e.g. 'sum of continuous functions is continuous')"
+                placeholder={t.search.search_placeholder}
                 className="w-full bg-bg-surface border border-border hover:border-border/80 focus:border-primary rounded-xl pl-10 pr-4 py-3 text-sm text-text-primary placeholder-text-muted outline-none transition-colors"
               />
             </div>
@@ -391,7 +394,7 @@ function SearchPageContent() {
               ) : (
                 <Search className="w-4 h-4" />
               )}
-              <span className="hidden sm:block">Search</span>
+              <span className="hidden sm:block">{t.common.search}</span>
             </button>
           </form>
         </div>
@@ -403,14 +406,14 @@ function SearchPageContent() {
             <div className="max-w-2xl mx-auto mt-12 text-center">
               <div className="text-6xl mb-4">🔍</div>
               <h3 className="text-lg font-semibold text-text-primary mb-2">
-                Search Mathlib semantically
+                {t.search.page_title}
               </h3>
               <p className="text-text-secondary text-sm mb-8">
-                Use natural language to find theorems, lemmas, and definitions from the 200k+ Mathlib library.
+                {t.search.search_description}
               </p>
               <div className="text-left">
                 <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
-                  Popular searches
+                  {t.search.popular_searches}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {HOT_SEARCHES.map((s) => (
@@ -449,10 +452,10 @@ function SearchPageContent() {
             <div className="max-w-2xl mx-auto mt-12 text-center">
               <div className="text-6xl mb-4">🤔</div>
               <h3 className="text-lg font-semibold text-text-primary mb-2">
-                No results found
+                {t.search.no_results_title}
               </h3>
               <p className="text-text-secondary text-sm mb-4">
-                Try rephrasing your query or remove module filters.
+                {t.search.no_results_desc}
               </p>
               <button
                 onClick={() => {
@@ -462,7 +465,7 @@ function SearchPageContent() {
                 }}
                 className="btn-secondary text-sm"
               >
-                Clear filters
+                {t.search.clear_filters}
               </button>
             </div>
           ) : (
@@ -470,12 +473,12 @@ function SearchPageContent() {
             <div className="max-w-3xl space-y-4">
               <div className="flex items-center justify-between text-xs text-text-muted mb-2">
                 <span>
-                  Found <span className="text-text-secondary font-medium">{results.length}</span> results
+                  {t.search.found_results} <span className="text-text-secondary font-medium">{results.length}</span> {t.search.results}
                   {selectedModules.length > 0 && (
-                    <span> in {selectedModules.join(", ")}</span>
+                    <span> {t.search.in_modules} {selectedModules.join(", ")}</span>
                   )}
                 </span>
-                <span>Sorted by relevance</span>
+                <span>{t.search.sorted_by_relevance}</span>
               </div>
               {results.map((result) => (
                 <ResultCard key={result.full_name} result={result} />

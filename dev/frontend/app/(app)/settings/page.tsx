@@ -11,22 +11,23 @@ import {
   Key,
   LogOut,
   Save,
-  CheckCircle,
   CreditCard,
   Loader2,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useTranslation } from "@/lib/i18n/useTranslation";
+import type { Locale } from "@/lib/i18n";
 
 type SettingsTab = "profile" | "notifications" | "security" | "preferences";
 
 export default function SettingsPage() {
+  const { t, locale, setLocale } = useTranslation();
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
   const [saving, setSaving] = useState(false);
 
   // Profile state
   const [displayName, setDisplayName] = useState("Demo Researcher");
   const [email, setEmail] = useState("demo@leanprove.ai");
-  const [locale, setLocale] = useState("en");
 
   // Notification state
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -43,14 +44,14 @@ export default function SettingsPage() {
     setSaving(true);
     await new Promise((r) => setTimeout(r, 800));
     setSaving(false);
-    toast.success("Settings saved successfully");
+    toast.success(t.settings.settings_saved);
   };
 
   const TABS: { key: SettingsTab; label: string; icon: React.ElementType }[] = [
-    { key: "profile", label: "Profile", icon: User },
-    { key: "notifications", label: "Notifications", icon: Bell },
-    { key: "security", label: "Security", icon: Shield },
-    { key: "preferences", label: "Preferences", icon: Palette },
+    { key: "profile", label: t.settings.tab_profile, icon: User },
+    { key: "notifications", label: t.settings.tab_notifications, icon: Bell },
+    { key: "security", label: t.settings.tab_security, icon: Shield },
+    { key: "preferences", label: t.settings.tab_preferences, icon: Palette },
   ];
 
   return (
@@ -59,7 +60,7 @@ export default function SettingsPage() {
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <Settings className="w-5 h-5 text-primary" />
-          <h1 className="text-xl font-bold text-text-primary">Settings</h1>
+          <h1 className="text-xl font-bold text-text-primary">{t.settings.page_title}</h1>
         </div>
 
         <div className="flex gap-6">
@@ -85,7 +86,7 @@ export default function SettingsPage() {
 
               <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-error hover:bg-error/10 transition-all">
                 <LogOut className="w-4 h-4" />
-                Sign out
+                {t.common.sign_out}
               </button>
             </div>
           </div>
@@ -98,7 +99,7 @@ export default function SettingsPage() {
                 <div className="card border-border">
                   <h2 className="text-sm font-semibold text-text-primary mb-4 flex items-center gap-2">
                     <User className="w-4 h-4 text-primary" />
-                    Profile Information
+                    {t.settings.profile_info}
                   </h2>
 
                   <div className="space-y-4">
@@ -109,15 +110,15 @@ export default function SettingsPage() {
                       </div>
                       <div>
                         <button className="text-xs text-primary hover:text-primary-light transition-colors">
-                          Change avatar
+                          {t.settings.change_avatar}
                         </button>
-                        <p className="text-xs text-text-muted mt-0.5">JPG, PNG. Max 2MB.</p>
+                        <p className="text-xs text-text-muted mt-0.5">{t.settings.avatar_hint}</p>
                       </div>
                     </div>
 
                     <div>
                       <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                        Display name
+                        {t.settings.display_name}
                       </label>
                       <input
                         type="text"
@@ -129,7 +130,7 @@ export default function SettingsPage() {
 
                     <div>
                       <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                        Email
+                        {t.settings.email}
                       </label>
                       <input
                         type="email"
@@ -142,15 +143,15 @@ export default function SettingsPage() {
                     <div>
                       <label className="block text-xs font-medium text-text-secondary mb-1.5 flex items-center gap-1.5">
                         <Globe className="w-3.5 h-3.5" />
-                        Language
+                        {t.settings.language}
                       </label>
                       <select
                         value={locale}
-                        onChange={(e) => setLocale(e.target.value)}
+                        onChange={(e) => setLocale(e.target.value as Locale)}
                         className="w-full bg-bg-dark border border-border rounded-lg px-3 py-2.5 text-sm text-text-primary outline-none focus:border-primary transition-colors"
                       >
-                        <option value="en">English</option>
-                        <option value="zh">Chinese</option>
+                        <option value="en">{t.settings.lang_en}</option>
+                        <option value="zh">{t.settings.lang_zh}</option>
                       </select>
                     </div>
                   </div>
@@ -160,15 +161,15 @@ export default function SettingsPage() {
                 <div className="card border-border">
                   <h2 className="text-sm font-semibold text-text-primary mb-4 flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-primary" />
-                    Subscription
+                    {t.settings.subscription}
                   </h2>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-text-primary">Researcher Plan</p>
-                      <p className="text-xs text-text-muted">$19/month - Renews Apr 1, 2026</p>
+                      <p className="text-sm font-medium text-text-primary">{t.settings.researcher_plan}</p>
+                      <p className="text-xs text-text-muted">{t.settings.plan_details}</p>
                     </div>
                     <button className="text-xs text-primary hover:text-primary-light transition-colors px-3 py-1.5 border border-primary/30 rounded-lg">
-                      Manage Subscription
+                      {t.settings.manage_subscription}
                     </button>
                   </div>
                 </div>
@@ -180,25 +181,25 @@ export default function SettingsPage() {
               <div className="card border-border space-y-5">
                 <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2">
                   <Bell className="w-4 h-4 text-primary" />
-                  Notification Preferences
+                  {t.settings.notification_prefs}
                 </h2>
 
                 {[
                   {
-                    label: "Email notifications",
-                    description: "Receive emails about compilation results and proof updates",
+                    label: t.settings.notif_email,
+                    description: t.settings.notif_email_desc,
                     checked: emailNotifications,
                     onChange: setEmailNotifications,
                   },
                   {
-                    label: "Usage alerts",
-                    description: "Get notified when approaching plan limits",
+                    label: t.settings.notif_usage,
+                    description: t.settings.notif_usage_desc,
                     checked: usageAlerts,
                     onChange: setUsageAlerts,
                   },
                   {
-                    label: "Weekly digest",
-                    description: "Receive a weekly summary of your proof activity",
+                    label: t.settings.notif_digest,
+                    description: t.settings.notif_digest_desc,
                     checked: weeklyDigest,
                     onChange: setWeeklyDigest,
                   },
@@ -232,41 +233,41 @@ export default function SettingsPage() {
                 <div className="card border-border">
                   <h2 className="text-sm font-semibold text-text-primary mb-4 flex items-center gap-2">
                     <Key className="w-4 h-4 text-primary" />
-                    Change Password
+                    {t.settings.change_password}
                   </h2>
                   <div className="space-y-4 max-w-md">
                     <div>
                       <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                        Current password
+                        {t.settings.current_password}
                       </label>
                       <input
                         type="password"
-                        placeholder="Enter current password"
+                        placeholder={t.settings.current_password_placeholder}
                         className="w-full bg-bg-dark border border-border rounded-lg px-3 py-2.5 text-sm text-text-primary placeholder-text-muted outline-none focus:border-primary transition-colors"
                       />
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                        New password
+                        {t.settings.new_password}
                       </label>
                       <input
                         type="password"
-                        placeholder="At least 8 characters"
+                        placeholder={t.settings.new_password_placeholder}
                         className="w-full bg-bg-dark border border-border rounded-lg px-3 py-2.5 text-sm text-text-primary placeholder-text-muted outline-none focus:border-primary transition-colors"
                       />
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                        Confirm new password
+                        {t.settings.confirm_password}
                       </label>
                       <input
                         type="password"
-                        placeholder="Repeat new password"
+                        placeholder={t.settings.confirm_password_placeholder}
                         className="w-full bg-bg-dark border border-border rounded-lg px-3 py-2.5 text-sm text-text-primary placeholder-text-muted outline-none focus:border-primary transition-colors"
                       />
                     </div>
                     <button className="text-sm bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition-colors">
-                      Update Password
+                      {t.settings.update_password}
                     </button>
                   </div>
                 </div>
@@ -274,7 +275,7 @@ export default function SettingsPage() {
                 <div className="card border-border">
                   <h2 className="text-sm font-semibold text-text-primary mb-4 flex items-center gap-2">
                     <Shield className="w-4 h-4 text-primary" />
-                    Connected Accounts
+                    {t.settings.connected_accounts}
                   </h2>
                   <div className="flex items-center justify-between py-2">
                     <div className="flex items-center gap-3">
@@ -285,22 +286,22 @@ export default function SettingsPage() {
                       </div>
                       <div>
                         <p className="text-sm text-text-primary font-medium">GitHub</p>
-                        <p className="text-xs text-text-muted">Not connected</p>
+                        <p className="text-xs text-text-muted">{t.settings.not_connected}</p>
                       </div>
                     </div>
                     <button className="text-xs text-primary hover:text-primary-light border border-primary/30 px-3 py-1.5 rounded-lg transition-colors">
-                      Connect
+                      {t.settings.connect}
                     </button>
                   </div>
                 </div>
 
                 <div className="card border-error/20">
-                  <h2 className="text-sm font-semibold text-error mb-2">Danger Zone</h2>
+                  <h2 className="text-sm font-semibold text-error mb-2">{t.settings.danger_zone}</h2>
                   <p className="text-xs text-text-muted mb-3">
-                    Permanently delete your account and all associated data. This action cannot be undone.
+                    {t.settings.danger_desc}
                   </p>
                   <button className="text-xs bg-error/10 hover:bg-error/20 border border-error/30 text-error px-3 py-1.5 rounded-lg transition-colors">
-                    Delete Account
+                    {t.settings.delete_account}
                   </button>
                 </div>
               </div>
@@ -311,12 +312,12 @@ export default function SettingsPage() {
               <div className="card border-border space-y-5">
                 <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2">
                   <Palette className="w-4 h-4 text-primary" />
-                  Editor Preferences
+                  {t.settings.editor_prefs}
                 </h2>
 
                 <div>
                   <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                    Font size (px)
+                    {t.settings.font_size}
                   </label>
                   <div className="flex items-center gap-3">
                     <input
@@ -335,20 +336,20 @@ export default function SettingsPage() {
 
                 <div>
                   <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                    Default proof style
+                    {t.settings.default_proof_style}
                   </label>
                   <div className="flex gap-3">
                     {(["tactic", "term"] as const).map((style) => (
                       <button
                         key={style}
                         onClick={() => setDefaultProofStyle(style)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all ${
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                           defaultProofStyle === style
                             ? "bg-primary text-white"
                             : "bg-bg-elevated text-text-secondary hover:text-text-primary"
                         }`}
                       >
-                        {style} mode
+                        {style === "tactic" ? t.settings.tactic_mode : t.settings.term_mode}
                       </button>
                     ))}
                   </div>
@@ -356,14 +357,14 @@ export default function SettingsPage() {
 
                 {[
                   {
-                    label: "Auto-save",
-                    description: "Automatically save editor content every 3 seconds",
+                    label: t.settings.auto_save,
+                    description: t.settings.auto_save_desc,
                     checked: autoSave,
                     onChange: setAutoSave,
                   },
                   {
-                    label: "Auto-compile",
-                    description: "Automatically compile when code changes (uses compilation quota)",
+                    label: t.settings.auto_compile,
+                    description: t.settings.auto_compile_desc,
                     checked: autoCompile,
                     onChange: setAutoCompile,
                   },
@@ -401,7 +402,7 @@ export default function SettingsPage() {
                 ) : (
                   <Save className="w-4 h-4" />
                 )}
-                {saving ? "Saving..." : "Save Changes"}
+                {saving ? t.common.saving : t.common.save_changes}
               </button>
             </div>
           </div>
