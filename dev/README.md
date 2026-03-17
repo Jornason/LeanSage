@@ -40,7 +40,7 @@ pnpm dev -- --port 3005
 ### Running Tests
 
 ```bash
-# Backend API tests (37 test cases)
+# Backend API tests (48 test cases)
 cd dev/backend
 conda activate leansage
 pytest tests/test_api.py -v
@@ -77,14 +77,21 @@ dev/
 │   ├── components/
 │   │   ├── editor/LeanEditor.tsx    # CodeMirror 6 editor
 │   │   └── math/MathFormula.tsx     # KaTeX rendering
-│   └── lib/api.ts               # API client
+│   └── lib/
+│       ├── api.ts                   # API client
+│       └── i18n/                    # Chinese/English i18n
+│           ├── zh.ts                # Chinese translations (default)
+│           ├── en.ts                # English translations
+│           ├── LanguageProvider.tsx # React context provider
+│           └── useTranslation.ts    # useTranslation() hook
 │
 └── backend/                # FastAPI Python backend
     ├── app/
     │   ├── main.py              # App entry point
     │   ├── core/
     │   │   ├── config.py        # Settings (Pydantic)
-    │   │   └── auth.py          # JWT + RBAC + quota
+    │   │   ├── auth.py          # JWT + RBAC + quota
+    │   │   └── ai_client.py     # aws-gpt-5.4 streaming client
     │   ├── schemas/
     │   │   ├── api.py           # Request/response schemas
     │   │   └── common.py        # Shared response format
@@ -102,7 +109,7 @@ dev/
     │       ├── proof.py         # CRUD /v1/proof/sessions
     │       └── billing.py       # Subscription & billing
     └── tests/
-        └── test_api.py          # 37 API test cases
+        └── test_api.py          # 48 API test cases
 ```
 
 ---
@@ -165,10 +172,12 @@ dev/
 | ORM | SQLAlchemy 2 |
 | Auth | JWT (python-jose) + bcrypt |
 | Database | PostgreSQL (Supabase) |
-| AI | Claude API (Anthropic) |
+| AI (primary) | aws-gpt-5.4 (OpenAI-compatible, streaming) |
+| AI (fallback) | Claude API (Anthropic) / OpenAI |
 | Search | Chroma Vector DB |
 | Lean Compiler | Modal.com |
 | Payments | Stripe |
+| i18n | Custom context + dictionary (Chinese/English) |
 
 ---
 
@@ -179,8 +188,11 @@ Copy `.env.example` to `.env` in the backend directory and fill in the values:
 | Variable | Description |
 |----------|-------------|
 | `JWT_SECRET_KEY` | Secret for JWT signing |
-| `ANTHROPIC_API_KEY` | Claude API key |
-| `OPENAI_API_KEY` | OpenAI API key (embeddings) |
+| `AWS_GPT_BASE_URL` | aws-gpt-5.4 base URL (default: `http://3.27.111.18:8080/api`) |
+| `AWS_GPT_API_KEY` | aws-gpt-5.4 API key |
+| `AWS_GPT_MODEL` | Model name (default: `gpt-5.4`) |
+| `ANTHROPIC_API_KEY` | Claude API key (fallback) |
+| `OPENAI_API_KEY` | OpenAI API key (fallback/embeddings) |
 | `GITHUB_CLIENT_ID/SECRET` | GitHub OAuth app |
 | `STRIPE_SECRET_KEY` | Stripe payments |
 | `DATABASE_URL` | PostgreSQL connection |
@@ -205,6 +217,77 @@ Role: researcher
 ```
 
 Or visit `/demo` for instant auto-login as the demo user.
+
+---
+
+## Docker Deployment
+
+### Quick Deploy
+
+```bash
+cd dev
+
+# Build and start all services
+docker compose up -d --build
+
+# Check status
+docker compose ps
+
+# View logs
+docker compose logs -f
+```
+
+### Services
+
+| Service | Internal Port | External Port | URL |
+|---------|--------------|---------------|-----|
+| Backend (FastAPI) | 8000 | 9019 | http://47.242.43.35:9019 |
+| Frontend (Next.js) | 3000 | 3029 | http://47.242.43.35:3029 |
+| Redis | 6379 | — (internal) | — |
+
+### Deploy to Remote Server
+
+```bash
+# 1. Copy project to server (from repo root)
+rsync -avz --exclude='node_modules' --exclude='venv' --exclude='.next' \
+  --exclude='__pycache__' --exclude='.env.local' \
+  dev/ root@47.242.43.35:~/leansage/
+
+# 2. SSH into server and start services
+ssh root@47.242.43.35
+cd ~/leansage
+docker compose up -d --build
+
+# 3. Verify deployment
+curl http://47.242.43.35:9019/health
+curl -I http://47.242.43.35:3029
+```
+
+### Environment Variables
+
+Set these in a `.env` file alongside `docker-compose.yml` for production:
+
+```env
+JWT_SECRET_KEY=your-production-secret
+ANTHROPIC_API_KEY=your-key
+OPENAI_API_KEY=your-key
+DATABASE_URL=postgresql://user:pass@host:5432/dbname
+```
+
+### Verification
+
+```bash
+# Backend health
+curl http://47.242.43.35:9019/health
+
+# Admin login
+curl -X POST http://47.242.43.35:9019/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@leanprove.ai","password":"admin12345"}'
+
+# Frontend accessible
+curl -I http://47.242.43.35:3029
+```
 
 ### Role Permissions
 

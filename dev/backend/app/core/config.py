@@ -39,6 +39,11 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
 
+    # AWS GPT-5.4 (OpenAI-compatible endpoint)
+    AWS_GPT_BASE_URL: str = "http://3.27.111.18:8080/api"
+    AWS_GPT_API_KEY: str = "cr_232256050a613cfe0e6e87581ee12316472561743170a9daf9ce9ddf3d8262d8"
+    AWS_GPT_MODEL: str = "gpt-5.4"
+
     # Redis
     REDIS_URL: str = "redis://localhost:6379"
 

@@ -11,6 +11,7 @@ from app.core.auth import (
     get_current_user_id, get_user_plan,
     check_rate_limit, check_and_increment_quota, require_plan,
 )
+from app.core.ai_client import chat
 
 router = APIRouter()
 
@@ -100,12 +101,25 @@ async def explain_tactics(
     )
 
     steps = []
+    lang_label = "Chinese" if request.language == "zh" else "English"
     for tactic in tactics:
-        explanation = explanations.get(
-            tactic,
-            f"The `{tactic}` tactic is used in this proof step. "
-            "Refer to the Lean 4 documentation for details.",
-        )
+        explanation = explanations.get(tactic)
+        if explanation is None:
+            # Unknown tactic — ask the AI
+            ai_result = chat(
+                system=(
+                    "You are an expert Lean 4 educator. "
+                    "Explain Lean 4 tactics concisely (1-2 sentences). "
+                    f"Respond in {lang_label}. Return plain text only, no markdown."
+                ),
+                user=f"Explain the Lean 4 tactic: `{tactic}`",
+                temperature=0.3,
+                max_tokens=200,
+            )
+            explanation = ai_result.strip() if ai_result else (
+                f"The `{tactic}` tactic is used in this proof step. "
+                "Refer to the Lean 4 documentation for details."
+            )
         doc_url = TACTIC_DOC_URLS.get(tactic)
         steps.append(TacticStep(tactic=tactic, explanation=explanation, doc_url=doc_url))
 

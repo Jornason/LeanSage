@@ -24,9 +24,20 @@ app = FastAPI(
 )
 
 # CORS
+cors_origins = [
+    settings.FRONTEND_URL,
+    "http://localhost:3000",
+    "http://localhost:3005",
+]
+# Support comma-separated extra origins via CORS_ORIGINS env var
+import os
+extra_origins = os.getenv("CORS_ORIGINS", "")
+if extra_origins:
+    cors_origins.extend([o.strip() for o in extra_origins.split(",") if o.strip()])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.FRONTEND_URL, "http://localhost:3000", "http://localhost:3005"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
