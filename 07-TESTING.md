@@ -355,3 +355,282 @@ ssh root@47.242.43.35 "python3 /tmp/selftest.py"
 # BASE = "http://47.242.43.35:9019"
 python3 dev/scripts/selftest.py
 ```
+
+---
+
+## 6. 自动化回归测试套件（pytest）
+
+> 测试套件路径：`dev/test/`
+> 框架：pytest + httpx
+> 结构：**一个测试案例 = 一个脚本文件**，按模块分子目录
+> 最新执行：2026-03-17，目标服务器 `http://47.242.43.35:9019`
+
+### 6.1 套件概览
+
+| 模块 | 目录 | 脚本数 | 含 AI | 说明 |
+|------|------|--------|-------|------|
+| 冒烟测试 | `smoke/` | 12 | 否 | 最快路径验证，无 AI 调用，< 10s |
+| 健康检查 | `api/health/` | 5 | 否 | /health 状态与字段 |
+| 认证安全 | `api/auth/` | 15 | 否 | 登录/注册/JWT 验证 |
+| Mathlib 搜索 | `api/search/` | 11 | 否 | 查询/top_k/缓存/字段 |
+| 证明生成 | `api/generate/` | 12 | **6 个** | 含 AI 推理的生成 |
+| 错误诊断 | `api/diagnose/` | 10 | **6 个** | 含 AI 分析的诊断 |
+| Tactic 解释 | `api/explain/` | 12 | **1 个** | 词典直查 + AI 补充 |
+| LaTeX 转换 | `api/convert/` | 8 | 否 | 双向转换/往返/Unicode |
+| 编译检查 | `api/compile/` | 6 | 否 | mock 编译结果验证 |
+| 用户信息 | `api/user/` | 9 | 否 | profile/usage/quota |
+| 证明会话 | `api/sessions/` | 8 | 否 | CRUD 全流程 |
+| 计费订阅 | `api/billing/` | 8 | 否 | subscription/checkout/cancel |
+| 配额限速 | `api/quota/` | 6 | 否 | free/researcher/admin 配额 |
+| 并发压力 | `api/concurrent/` | 3 | **1 个** | 多线程并发请求 |
+| **合计** | | **125** | **14** | |
+
+### 6.2 运行命令
+
+```bash
+cd dev/test
+
+# 冒烟测试（最快，~10s，无 AI）
+bash run_tests.sh --smoke --target PROD
+
+# 完整回归（跳过 AI，~66s）
+bash run_tests.sh --no-ai --target PROD
+
+# 完整回归（含 AI，~5min）
+bash run_tests.sh --target PROD
+
+# 只跑某模块
+BASE_URL=http://47.242.43.35:9019 pytest api/auth/ -v
+BASE_URL=http://47.242.43.35:9019 pytest api/search/ -v
+
+# 并行加速（4 workers）
+bash run_tests.sh --no-ai --parallel --target PROD
+```
+
+### 6.3 测试案例目录
+
+#### 冒烟测试 `smoke/`（12 个）
+
+| 脚本文件 | 测试内容 | Mark |
+|----------|----------|------|
+| `test_service_is_up.py` | GET /health 返回 200，status=healthy | smoke |
+| `test_environment_is_production.py` | /health 返回 environment=production | smoke |
+| `test_admin_login.py` | admin 账号登录成功，返回 access_token | smoke, auth |
+| `test_demo_auto_login.py` | POST /auth/demo 无凭证获取 token | smoke, auth |
+| `test_bad_credentials_rejected.py` | 错误密码登录返回 401 | smoke, auth |
+| `test_search_returns_results.py` | 搜索返回 ≥1 条结果 | smoke, search |
+| `test_search_requires_auth.py` | 未认证搜索返回 401/403 | smoke, search |
+| `test_explain_known_tactic.py` | ring 等已知 tactic 解释成功 | smoke, explain |
+| `test_profile_accessible.py` | GET /user/profile 返回 200 | smoke, user |
+| `test_usage_accessible.py` | GET /user/usage 返回 200 | smoke, user |
+| `test_lean_to_latex.py` | POST /convert/lean-to-latex 返回 200 | smoke, convert |
+| `test_compile_check.py` | POST /compile/check 返回 200 | smoke, compile |
+
+#### 健康检查 `api/health/`（5 个）
+
+| 脚本文件 | 测试内容 | Mark |
+|----------|----------|------|
+| `test_health_status_is_healthy.py` | status 字段值为 "healthy" | health |
+| `test_health_environment.py` | environment 字段值为 "production" | health |
+| `test_health_version_present.py` | version 字段存在且非空 | health |
+| `test_health_uptime_present.py` | uptime 字段存在 | health |
+| `test_root_redirect_or_200.py` | GET / 返回 200 或 3xx | health |
+
+#### 认证安全 `api/auth/`（15 个）
+
+| 脚本文件 | 测试内容 | Mark |
+|----------|----------|------|
+| `test_admin_login_success.py` | admin 登录成功，role=admin，含 access_token | smoke, auth |
+| `test_demo_login_success.py` | demo 账号登录成功，返回 access_token | smoke, auth |
+| `test_login_wrong_password_returns_401.py` | 错误密码返回 401 | auth |
+| `test_login_unknown_email_returns_401.py` | 未注册邮箱返回 401 | auth |
+| `test_login_missing_fields_returns_422.py` | 缺少 password 字段返回 422 | auth |
+| `test_demo_endpoint_returns_token.py` | /auth/demo 返回 token（无需凭证） | smoke, auth |
+| `test_register_new_user.py` | 新用户注册成功，success=true，返回 token | auth |
+| `test_register_duplicate_email_returns_409.py` | 重复邮箱注册返回 409 | auth |
+| `test_register_invalid_email_returns_422.py` | 非邮箱格式注册返回 422 | auth |
+| `test_register_short_password_returns_422.py` | 密码 < 8 字符返回 422 | auth |
+| `test_register_missing_display_name_returns_422.py` | 缺少 display_name 返回 422 | auth |
+| `test_invalid_token_returns_401.py` | 畸形/过期 JWT 返回 401 | auth |
+| `test_missing_token_returns_401_or_403.py` | 无 Authorization header 返回 401/403 | auth |
+| `test_token_type_is_bearer.py` | token_type 字段值为 "bearer" | auth |
+| `test_token_expires_in_7_days.py` | expires_in ≈ 604800 秒（7天） | auth |
+
+#### Mathlib 搜索 `api/search/`（11 个）
+
+| 脚本文件 | 测试内容 | Mark |
+|----------|----------|------|
+| `test_search_english_query.py` | 英文查询返回 ≥1 条结果 | smoke, search |
+| `test_search_chinese_query.py` | 中文查询返回 ≥1 条结果 | search |
+| `test_search_top_k_respected.py` | top_k=3 返回 ≤3 条结果 | search |
+| `test_search_top_k_max.py` | top_k=20 不超过最大限制 | search |
+| `test_search_top_k_min.py` | top_k=1 精确返回 1 条 | search |
+| `test_search_empty_query_returns_422.py` | 空查询返回 422 | search |
+| `test_search_overlong_query_returns_422.py` | 501 字符超长查询返回 422 | search |
+| `test_search_cached_result.py` | 重复查询结果一致（缓存命中） | search |
+| `test_search_result_fields.py` | 结果含 name/statement/score 等字段 | search |
+| `test_search_score_range.py` | 结果 score 在 0~1 范围内 | search |
+| `test_search_requires_auth.py` | 未认证请求返回 401/403 | smoke, search |
+
+#### 证明生成 `api/generate/`（12 个，含 6 个 AI 用例）
+
+| 脚本文件 | 测试内容 | Mark | AI |
+|----------|----------|------|----|
+| `test_generate_simple_theorem.py` | 生成 1+1=2 简单定理，含 theorem 关键字 | generate, ai | ✓ |
+| `test_generate_medium_theorem.py` | 生成 n+0=n 中等定理 | generate, ai | ✓ |
+| `test_generate_complex_theorem.py` | 生成复杂定理框架，超时 90s 内完成 | generate, ai, slow | ✓ |
+| `test_generate_confidence_threshold.py` | confidence ≥ 0.4（fallback 阈值） | generate, ai | ✓ |
+| `test_generate_ai_confidence.py` | AI 真实响应时 confidence=0.85 | generate, ai | ✓ |
+| `test_generate_chinese_description.py` | 中文描述也能成功生成 | generate, ai | ✓ |
+| `test_generate_empty_returns_422.py` | 空 description 返回 422 | generate | — |
+| `test_generate_overlong_returns_422.py` | 超 2000 字符返回 422 | generate | — |
+| `test_generate_researcher_access.py` | researcher 角色可访问生成接口 | generate | — |
+| `test_generate_free_user_blocked.py` | free 用户调用生成返回 403 | generate | — |
+| `test_generate_requires_auth.py` | 未认证请求返回 401/403 | generate | — |
+| `test_generate_response_fields.py` | 响应含 lean_code/confidence/tactics 字段 | generate | — |
+
+#### 错误诊断 `api/diagnose/`（10 个，含 6 个 AI 用例）
+
+| 脚本文件 | 测试内容 | Mark | AI |
+|----------|----------|------|----|
+| `test_diagnose_unknown_tactic.py` | 未知 tactic 返回诊断 + 修复建议 | diagnose, ai | ✓ |
+| `test_diagnose_type_mismatch.py` | 类型不匹配错误有解释 | diagnose, ai | ✓ |
+| `test_diagnose_unknown_identifier.py` | 未知标识符建议 import | diagnose, ai | ✓ |
+| `test_diagnose_sorry_warning.py` | sorry 代码返回 warning 级别诊断 | diagnose, ai | ✓ |
+| `test_diagnose_severity_filter.py` | severity_filter=error 过滤结果 | diagnose, ai | ✓ |
+| `test_diagnose_fix_suggestions_present.py` | 响应含 fix_suggestions 字段 | diagnose, ai | ✓ |
+| `test_diagnose_empty_returns_422.py` | 空 code 返回 422 | diagnose | — |
+| `test_diagnose_requires_auth.py` | 未认证请求返回 401/403 | diagnose | — |
+| `test_diagnose_response_has_counts.py` | 响应含 total_errors/total_warnings 字段 | diagnose | — |
+| `test_diagnose_valid_code_no_errors.py` | 正确代码 total_errors=0（允许 AI 非确定性） | diagnose | — |
+
+#### Tactic 解释 `api/explain/`（12 个，含 1 个 AI 用例）
+
+| 脚本文件 | 测试内容 | Mark | AI |
+|----------|----------|------|----|
+| `test_explain_tactic_ring.py` | ring 来自词典，2ms 内返回 | explain | — |
+| `test_explain_tactic_simp.py` | simp 来自词典，2ms 内返回 | explain | — |
+| `test_explain_tactic_omega.py` | omega 来自词典，2ms 内返回 | explain | — |
+| `test_explain_language_zh.py` | language=zh 返回中文解释 | explain | — |
+| `test_explain_language_en.py` | language=en 返回英文解释 | explain | — |
+| `test_explain_unknown_tactic_ai.py` | 未知 tactic 触发 AI 补充解释 | explain, ai | ✓ |
+| `test_explain_doc_url.py` | 响应含 doc_url 字段 | explain | — |
+| `test_explain_detailed_researcher.py` | researcher 可访问 detailed 模式 | explain | — |
+| `test_explain_detailed_free_blocked.py` | free 用户访问 detailed 模式返回 403 | explain | — |
+| `test_explain_requires_auth.py` | 未认证请求返回 401/403 | explain | — |
+| `test_explain_empty_returns_422.py` | 空 code 返回 422 | explain | — |
+| `test_explain_response_fields.py` | 响应含 explanation/tactic_name 字段 | explain | — |
+
+#### LaTeX 转换 `api/convert/`（8 个）
+
+| 脚本文件 | 测试内容 | Mark |
+|----------|----------|------|
+| `test_convert_latex_to_lean.py` | LaTeX→Lean 成功，含 lean_expression 字段 | convert |
+| `test_convert_lean_to_latex.py` | Lean→LaTeX 成功，返回 latex 字段 | smoke, convert |
+| `test_convert_latex_empty_returns_422.py` | 空 LaTeX 返回 422 | convert |
+| `test_convert_lean_empty_returns_422.py` | 空 Lean 代码返回 422 | convert |
+| `test_convert_round_trip.py` | LaTeX→Lean→LaTeX 往返语义等价 | convert |
+| `test_convert_unicode.py` | 含 ∀∃∈∉ 的 Lean 代码正确转 LaTeX | convert |
+| `test_convert_requires_auth.py` | 未认证请求返回 401/403 | convert |
+| `test_convert_success_flag.py` | 响应 success=true | convert |
+
+#### 编译检查 `api/compile/`（6 个）
+
+| 脚本文件 | 测试内容 | Mark |
+|----------|----------|------|
+| `test_compile_valid_code.py` | 有效 Lean 代码编译，status=success | smoke, compile |
+| `test_compile_invalid_code.py` | 含错误代码编译，status=error | compile |
+| `test_compile_sorry_code.py` | sorry 代码编译，含 warning | compile |
+| `test_compile_empty_returns_422.py` | 空代码返回 422 | compile |
+| `test_compile_has_status_field.py` | 响应含 status 字段 | compile |
+| `test_compile_requires_auth.py` | 未认证请求返回 401/403 | compile |
+
+#### 用户信息 `api/user/`（9 个）
+
+| 脚本文件 | 测试内容 | Mark |
+|----------|----------|------|
+| `test_user_get_profile.py` | GET /user/profile 返回 200 | smoke, user |
+| `test_user_profile_contains_role.py` | profile 含 role 字段 | user |
+| `test_user_admin_role.py` | admin 账号 role=admin | user |
+| `test_user_get_usage.py` | GET /user/usage 返回 200 | smoke, user |
+| `test_user_usage_has_quota_fields.py` | usage 含 quota/used/remaining 字段 | user |
+| `test_user_admin_unlimited_quota.py` | admin quota=-1（无限） | user |
+| `test_user_researcher_usage.py` | researcher 账号 usage 正常返回 | user |
+| `test_user_profile_requires_auth.py` | /user/profile 未认证返回 401/403 | user |
+| `test_user_usage_requires_auth.py` | /user/usage 未认证返回 401/403 | user |
+
+#### 证明会话 `api/sessions/`（8 个）
+
+| 脚本文件 | 测试内容 | Mark |
+|----------|----------|------|
+| `test_sessions_create.py` | POST /sessions 创建成功，返回 session_id | sessions |
+| `test_sessions_list.py` | GET /sessions 列出所有 session | sessions |
+| `test_sessions_get_by_id.py` | GET /sessions/{id} 返回正确 session | sessions |
+| `test_sessions_update.py` | PUT /sessions/{id} 更新 title | sessions |
+| `test_sessions_delete.py` | DELETE /sessions/{id} 返回 200 | sessions |
+| `test_sessions_404_after_delete.py` | 删除后 GET 返回 404 | sessions |
+| `test_sessions_requires_auth.py` | 未认证请求返回 401/403 | sessions |
+| `test_sessions_missing_title_returns_422.py` | 创建时缺少 title 返回 422 | sessions |
+
+#### 计费订阅 `api/billing/`（8 个）
+
+| 脚本文件 | 测试内容 | Mark |
+|----------|----------|------|
+| `test_billing_get_subscription.py` | GET /billing/subscription 返回 200 | billing |
+| `test_billing_plan_field.py` | 响应含 plan 字段 | billing |
+| `test_billing_admin_plan.py` | admin 账号 plan=admin | billing |
+| `test_billing_requires_auth.py` | /billing/subscription 未认证返回 401/403 | billing |
+| `test_billing_invalid_plan_returns_422.py` | 无效 plan 名称返回 422 | billing |
+| `test_billing_researcher_checkout.py` | researcher checkout 接口返回 200 | billing |
+| `test_billing_cancel.py` | POST /billing/cancel 返回 200 | billing |
+| `test_billing_cancel_requires_auth.py` | cancel 未认证返回 401/403 | billing |
+
+#### 配额限速 `api/quota/`（6 个）
+
+| 脚本文件 | 测试内容 | Mark |
+|----------|----------|------|
+| `test_quota_free_search_exhausted.py` | free 用户第 11 次搜索触发 429 | quota |
+| `test_quota_free_generate_blocked.py` | free 用户调用生成接口返回 403 | quota |
+| `test_quota_free_explain_allowed.py` | free 用户基础 explain 允许通过 | quota |
+| `test_quota_researcher_unlimited.py` | researcher 大量请求不触发 429 | quota |
+| `test_quota_admin_never_limited.py` | admin 不受限速影响 | quota |
+| `test_quota_429_response_format.py` | 429 响应含 retry_after 字段 | quota |
+
+#### 并发压力 `api/concurrent/`（3 个，含 1 个 AI 用例）
+
+| 脚本文件 | 测试内容 | Mark | AI |
+|----------|----------|------|----|
+| `test_concurrent_10_searches.py` | 10 线程并发搜索，≥8 个成功，< 5s | concurrent | — |
+| `test_concurrent_5_diagnoses.py` | 5 线程并发诊断，≥4 个成功 | concurrent, ai | ✓ |
+| `test_concurrent_different_users.py` | 两个不同用户同时搜索，互不干扰 | concurrent | — |
+
+### 6.4 最新执行结果（2026-03-17）
+
+> 目标：`http://47.242.43.35:9019` | 命令：`bash run_tests.sh --no-ai --target PROD`
+
+| 统计项 | 数量 |
+|--------|------|
+| ✅ 通过 | **111** |
+| ❌ 失败 | **0** |
+| ⏭ 跳过（AI/slow 标记，未执行） | **14** |
+| 通过率（已执行） | **100%** |
+| 总耗时 | **~66s** |
+
+全部 111 个非 AI 测试一次性通过，无任何失败：
+
+| 模块 | 通过 | 跳过(AI) |
+|------|------|----------|
+| smoke | 12/12 | 0 |
+| health | 5/5 | 0 |
+| auth | 15/15 | 0 |
+| search | 11/11 | 0 |
+| generate | 6/12 | 6 |
+| diagnose | 4/10 | 6 |
+| explain | 11/12 | 1 |
+| convert | 8/8 | 0 |
+| compile | 6/6 | 0 |
+| user | 9/9 | 0 |
+| sessions | 8/8 | 0 |
+| billing | 8/8 | 0 |
+| quota | 6/6 | 0 |
+| concurrent | 2/3 | 1 |
