@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 <claude-mem-context>
 # Recent Activity
 
@@ -5,3 +9,155 @@
 
 *No recent activity*
 </claude-mem-context>
+
+## Project Overview
+
+LeanSage (LeanProve AI) — AI-powered SaaS for Lean 4 mathematical proof assistance. Monorepo with Next.js frontend and FastAPI backend, deployed via Docker on a single Ubuntu server.
+
+## Development Commands
+
+### Backend (FastAPI)
+```bash
+conda activate leansage          # Python 3.11 env
+cd dev/backend
+uvicorn app.main:app --reload --port 8005
+# API docs: http://localhost:8005/docs
+```
+
+### Frontend (Next.js)
+```bash
+cd dev/frontend
+pnpm install
+pnpm dev -- --port 3005
+```
+
+### Regression Tests
+```bash
+cd dev/test
+
+# Smoke only (~10s, no AI)
+BASE_URL=http://47.242.43.35:9019 pytest -m smoke -v
+
+# Full non-AI suite (~66s)
+BASE_URL=http://47.242.43.35:9019 pytest -m "not ai and not slow" -v
+
+# Full suite including AI (~3m36s)
+BASE_URL=http://47.242.43.35:9019 pytest -v
+
+# Single test file
+BASE_URL=http://47.242.43.35:9019 pytest api/auth/test_admin_login_success.py -v
+
+# Single module
+BASE_URL=http://47.242.43.35:9019 pytest api/search/ -v
+```
+
+### Deployment
+```bash
+# Sync to production server
+rsync -avz --exclude='node_modules' --exclude='.next' --exclude='__pycache__' \
+  --exclude='*.pyc' --exclude='.env' --exclude='.env.local' \
+  --exclude='venv' --exclude='.git' \
+  dev/ root@47.242.43.35:~/leansage/
+
+# Rebuild containers (only if backend/frontend code changed)
+ssh root@47.242.43.35 "cd ~/leansage && docker compose up -d --build"
+
+# Check status
+ssh root@47.242.43.35 "cd ~/leansage && docker compose ps"
+```
+
+## Architecture
+
+```
+dev/
+├── backend/app/
+│   ├── main.py              # FastAPI app, router registration
+│   ├── core/
+│   │   ├── ai_client.py     # Singleton OpenAI client → aws-gpt-5.4
+│   │   ├── auth.py          # JWT, RBAC, quota enforcement, rate limiting
+│   │   └── config.py        # Pydantic Settings (reads .env)
+│   ├── schemas/
+│   │   ├── api.py           # All request/response models
+│   │   └── common.py        # ok(), error(), paginated() helpers
+│   └── routers/             # One file per API group (search, generate, …)
+├── frontend/app/            # Next.js 14 App Router
+│   ├── (app)/               # Authenticated pages (search, workspace, …)
+│   └── (auth)/              # Login page
+├── frontend/lib/
+│   ├── api.ts               # Typed fetch wrapper for all backend calls
+│   └── i18n/                # zh.ts + en.ts dictionaries, useTranslation hook
+└── test/                    # pytest regression suite (125 scripts, 1 test/file)
+    ├── conftest.py           # session-scoped fixtures: client, admin_token, free_user
+    ├── pytest.ini
+    ├── smoke/                # 12 fast sanity checks
+    └── api/                  # 14 subdirectories, one per module
+```
+
+## Key Patterns
+
+### AI Fallback Pattern (all routers follow this)
+Every AI-powered router calls `ai_client.chat()` and falls back to heuristic/mock data when it returns `None`:
+- AI response → `confidence=0.85`
+- Fallback → `confidence=0.4`
+
+```python
+from app.core.ai_client import chat
+
+result = chat(system="...", user="...")
+if result:
+    # parse AI response, set confidence=0.85
+else:
+    # return mock/heuristic data, set confidence=0.4
+```
+
+### Standard Response Format
+All endpoints use `ok()` / `error()` from `schemas/common.py`:
+```python
+return ok({"lean_code": ..., "confidence": 0.85})
+# → {"success": true, "data": {...}, "meta": {"request_id": "...", "timestamp": "..."}}
+```
+
+### Auth & Quota (in `core/auth.py`)
+- `get_current_user_id` — required auth (401 if missing)
+- `get_current_user_optional` — optional auth
+- `require_role("researcher")` — RBAC check
+- `check_quota(user_id, feature)` — enforces monthly limits, raises 429/403
+
+### Search API — uses `top_k` field (not `limit`)
+```json
+{"query": "continuous functions", "top_k": 5}
+```
+
+### LaTeX→Lean response fields: `lean_expression` + `lean_declaration` (not `lean_code`)
+
+## Production Server
+
+| Item | Value |
+|------|-------|
+| Server | `47.242.43.35` (Ubuntu 22.04) |
+| Backend | `http://47.242.43.35:9019` |
+| Frontend | `http://47.242.43.35:3029` |
+| AI model | aws-gpt-5.4 at `http://3.27.111.18:8080/api/v1` |
+| Admin login | `admin@leanprove.ai` / `admin12345` |
+| Demo login | `demo@leanprove.ai` / `demo12345` (researcher tier) |
+
+## RBAC & Quota
+
+| Role | Search | Generate | Rate limit |
+|------|--------|----------|------------|
+| free | 10/month | blocked (403) | 10/min |
+| researcher | unlimited | 50/month | 30/min |
+| lab | 500/month | 500/month | 60/min |
+| admin | unlimited | unlimited | 120/min |
+
+## Test Suite Structure
+
+125 individual test scripts in `dev/test/`, one function per file. pytest marks:
+- `smoke` — fast path, no AI, run after every deploy
+- `ai` — requires live aws-gpt-5.4; use `-m "not ai"` to skip
+- `slow` — timeout-sensitive (complex theorem generation)
+
+Fixtures in `conftest.py`:
+- `client` — session-scoped `httpx.Client` (base_url from `BASE_URL` env var, default `http://localhost:9019`)
+- `admin_headers` — session-scoped admin JWT
+- `free_user` — function-scoped fresh random user (for quota tests)
